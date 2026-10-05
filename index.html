@@ -450,6 +450,9 @@ footer a{color:var(--teal);text-decoration:underline;cursor:pointer}
 
       <p class="form-note">🔒 Tus datos son seguros. Solo te contactamos para gestionar el cambio.</p>
 
+      <div id="turnstileBox" style="display:flex;justify-content:center;margin:0 0 12px;"></div>
+      <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=turnstileListo" async defer></script>
+
       <button class="btn-modal-submit" onclick="enviarFormulario()">
         🚀 ¡Quiero la tarifa más barata para mi empresa!
       </button>
@@ -798,23 +801,10 @@ function parsearFacturaLuz3TD(texto){
   // La interpretación correcta (miles vs. decimal) la resuelve numES().
   var DINERO = '(\\d{1,3}(?:[.,]\\d{3})*(?:[.,]\\d{1,2})?)';
 
-  var encontrados = 0;
-
-  // --- Formato tabla de lecturas (CHC Energía y similares): fila "Consumo(kWh) 0,00 0,00 383,00 308,00 0,00 304,00 995,00"
-  // Seis valores P1-P6 seguidos (y opcionalmente el TOTAL). Es el formato más fiable, así que se prueba primero.
-  var mTablaConsumo = t.match(/Consumo\s*\(\s*kWh\s*\)\s*((?:\d{1,3}(?:\.\d{3})*(?:,\d+)?\s+){5}\d{1,3}(?:\.\d{3})*(?:,\d+)?)/i);
-  if(mTablaConsumo){
-    var numsTabla = mTablaConsumo[1].trim().split(/\s+/);
-    if(numsTabla.length >= 6){
-      for(var it=0; it<6; it++){ datos.kwhPeriodos[it] = numES(numsTabla[it]); }
-      encontrados = 6;
-    }
-  }
-
   // --- Consumo por periodo (P1-P6), sin sumar: cada periodo se guarda por separado ---
   var reP = /\bP([1-6]):?\s*(\d{1,6}(?:[.,]\d+)?)\s*kWh/gi;
-  var mp3, periodosVistos = {}, yaLeidaTabla = encontrados > 0;
-  while(!yaLeidaTabla && (mp3 = reP.exec(t)) !== null){
+  var mp3, periodosVistos = {}, encontrados = 0;
+  while((mp3 = reP.exec(t)) !== null){
     var idx = parseInt(mp3[1],10) - 1;
     if(!periodosVistos[idx]){
       periodosVistos[idx] = true;
@@ -855,18 +845,10 @@ function parsearFacturaLuz3TD(texto){
   if(encontrados === 0){
     // No hay desglose por periodos en el texto: repartimos el consumo total
     // con una proporción típica de una empresa (más consumo en llano/valle que en punta)
-    // Primero: sumar TODAS las líneas de energía "383,00 kWh x 0,174646 €/kWh" (una por tramo/periodo),
-    // en vez de quedarnos solo con la primera cifra de kWh que aparezca.
-    var reLineaEnergia = /(\d{1,3}(?:\.\d{3})*(?:,\d+)?|\d+(?:\.\d+)?)\s*kWh\s*[x×*]\s*\d+[.,]\d+\s*€?\s*\/\s*kWh/gi;
-    var mLin, sumaLineas = 0, nLineas = 0;
-    while((mLin = reLineaEnergia.exec(t)) !== null){ sumaLineas += numES(mLin[1]); nLineas++; }
-    if(nLineas > 0){
-      datos.kwhPeriodos = [sumaLineas*0.22, sumaLineas*0.28, sumaLineas*0.20, sumaLineas*0.14, sumaLineas*0.10, sumaLineas*0.06];
-    }
-    var mConsumoTotal = nLineas > 0 ? null : t.match(/(\d{1,6}(?:[.,]\d+)?)\s*kWh\s*(?:de\s+esta\s+factura|\.?\s*Consumo\s+total)/i)
+    var mConsumoTotal = t.match(/(\d{1,6}(?:[.,]\d+)?)\s*kWh\s*(?:de\s+esta\s+factura|\.?\s*Consumo\s+total)/i)
       || t.match(/Consumo\s+total[^\d]{0,40}?(\d{1,6}(?:[.,]\d+)?)\s*kWh/i)
       || t.match(/Total\s+consumo[^\d]{0,40}?(\d{1,6}(?:[.,]\d+)?)\s*kWh/i);
-    if(!mConsumoTotal && nLineas === 0) mConsumoTotal = t.match(/(\d{1,6}(?:[.,]\d+)?)\s*kWh\b/i);
+    if(!mConsumoTotal) mConsumoTotal = t.match(/(\d{1,6}(?:[.,]\d+)?)\s*kWh\b/i);
     if(mConsumoTotal){
       var total = numES(mConsumoTotal[1]);
       datos.kwhPeriodos = [total*0.22, total*0.28, total*0.20, total*0.14, total*0.10, total*0.06];
@@ -879,7 +861,7 @@ function parsearFacturaLuz3TD(texto){
   // (admite '.', '/' o '-' como separador de fecha, formato habitual en facturas de distribuidora/e-distribución)
   datos.mes = null;
   var diasCalculados = false;
-  var reFacPeriodo = /Per[ií]odo\s+de\s+Facturaci[oó]n:?\s*(?:del\s*)?(\d{1,2})[.\/\-](\d{1,2})[.\/\-](\d{2,4})\s*(?:al?|a|-)\s*(\d{1,2})[.\/\-](\d{1,2})[.\/\-](\d{2,4})/i;
+  var reFacPeriodo = /Periodo\s+de\s+Facturaci[oó]n:?\s*(?:del\s*)?(\d{1,2})[.\/\-](\d{1,2})[.\/\-](\d{2,4})\s*(?:al?|a|-)\s*(\d{1,2})[.\/\-](\d{1,2})[.\/\-](\d{2,4})/i;
   var mPeriodo = t.match(reFacPeriodo);
   if(mPeriodo){
     var y1 = parseInt(mPeriodo[3],10), y2 = parseInt(mPeriodo[6],10);
@@ -892,10 +874,6 @@ function parsearFacturaLuz3TD(texto){
     var mmFac = parseInt(mPeriodo[5],10);
     if(mmFac >= 1 && mmFac <= 12) datos.mes = y2 + '-' + (mmFac < 10 ? '0'+mmFac : ''+mmFac);
   }
-
-  // --- Días facturados tal y como los aplica la factura en el término de potencia: "17,00 kW x 0,057279 €/kW día x 31 día(s)" ---
-  var mDiasPot = t.match(/kW\s*[x×*]\s*\d+[.,]\d+\s*€?\s*\/\s*kW\s*d[ií]a\s*[x×*]\s*(\d{1,3})\s*d[ií]a/i);
-  if(mDiasPot){ var dp = parseInt(mDiasPot[1],10); if(dp > 0 && dp < 400){ datos.dias = dp; diasCalculados = true; } }
 
   // --- Días facturados (si no se pudo calcular a partir del periodo de facturación) ---
   if(!diasCalculados){
@@ -928,11 +906,6 @@ function parsearFacturaLuz3TD(texto){
   if(potencias.length === 0){
     var mpP1 = t.match(/\bP1\s*[:=]?\s*(\d{1,3}(?:[.,]\d+)?)\s*kW\b/i);
     if(mpP1) potencias.push(numESPotencia(mpP1[1]));
-  }
-  if(potencias.length === 0){
-    // Formato línea de facturación: "17,00 kW x 0,057279 €/kW día x 31 día(s)"
-    var mpLinea = t.match(/(\d{1,3}(?:[.,]\d+)?)\s*kW\s*[x×*]\s*\d+[.,]\d+\s*€?\s*\/\s*kW/i);
-    if(mpLinea) potencias.push(numESPotencia(mpLinea[1]));
   }
   if(potencias.length === 0){
     var mp2b = t.match(/Punta\s+(\d{1,3}(?:[.,]\d+)?)\s*kW\b/i);
@@ -1385,7 +1358,42 @@ function generarPDFComparativa(P){
 }
 
 // === MODAL ===
+// === Captcha antibots (Cloudflare Turnstile) ===
+// El widget se dibuja en el modal; cada token vale para un solo envío, así que
+// se reinicia al abrir el modal y tras cada intento de envío.
+var TURNSTILE_SITEKEY = '0x4AAAAAAFOHswzdomMJdtWI';
+var turnstileWidgetId = null;
+function turnstileListo(){ prepararTurnstile(); }
+function prepararTurnstile(){
+  if(!window.turnstile || !document.getElementById('turnstileBox')) return;
+  try{
+    if(turnstileWidgetId === null){
+      turnstileWidgetId = window.turnstile.render('#turnstileBox', { sitekey: TURNSTILE_SITEKEY, language: 'es' });
+    } else {
+      window.turnstile.reset(turnstileWidgetId);
+    }
+  }catch(e){ console.error('[Comparador] Turnstile:', e); }
+}
+function turnstileToken(){
+  try{
+    if(window.turnstile && turnstileWidgetId !== null) return window.turnstile.getResponse(turnstileWidgetId) || '';
+  }catch(e){}
+  return '';
+}
+function mostrarErrorModal(texto){
+  var errorBox = document.getElementById('modalError');
+  if(!errorBox){
+    errorBox = document.createElement('div');
+    errorBox.id = 'modalError';
+    errorBox.style.cssText = 'margin-top:10px;padding:10px 12px;border-radius:8px;background:#fde2e2;color:#a11;font-size:13px;';
+    document.getElementById('modalForm').appendChild(errorBox);
+  }
+  errorBox.textContent = texto;
+}
+
+if(window.turnstile){ prepararTurnstile(); } // por si api.js terminó de cargar antes que este script
 function abrirModal(){
+  prepararTurnstile();
   document.getElementById('modalOverlay').classList.add('active');
   document.getElementById('modalForm').style.display = 'block';
   document.getElementById('modalSuccess').style.display = 'none';
@@ -1402,22 +1410,33 @@ function enviarFormulario(){
   if(!nombre){ document.getElementById('inputNombre').focus(); return; }
   if(!tel || tel.length < 9){ document.getElementById('inputTelefono').focus(); return; }
 
+  // Si el captcha ya cargó pero aún no ha terminado de verificar, se pide esperar.
+  // Si no cargó (bloqueador de anuncios, red), se envía igualmente y decide el servidor.
+  var tokenCaptcha = turnstileToken();
+  if(window.turnstile && turnstileWidgetId !== null && !tokenCaptcha){
+    mostrarErrorModal('Estamos verificando que eres una persona. Espera un segundo e inténtalo de nuevo.');
+    return;
+  }
+
   var btn = document.querySelector('.btn-modal-submit');
   if(btn){ btn.disabled = true; btn.textContent = 'Enviando...'; }
 
   fetch(URL_GUARDAR_LEAD, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nombre: nombre, telefono: tel })
+    body: JSON.stringify({ nombre: nombre, telefono: tel, turnstile_token: tokenCaptcha })
   }).then(function(res){
     return res.json().catch(function(){ return null; }).then(function(data){
       if(!res.ok || !data || !data.ok){
-        throw new Error('Respuesta del servidor: ' + res.status + ' ' + JSON.stringify(data));
+        var errServidor = new Error('Respuesta del servidor: ' + res.status + ' ' + JSON.stringify(data));
+        errServidor.mensajeServidor = data && data.error;
+        throw errServidor;
       }
       document.getElementById('modalForm').style.display = 'none';
       document.getElementById('modalSuccess').style.display = 'block';
     });
   }).catch(function(err){
+    prepararTurnstile();
     console.error('[Comparador] No se pudo guardar el lead (revisa la URL, CORS o la tabla en IONOS):', err);
     if(btn){ btn.disabled = false; btn.textContent = 'Apuntarme'; }
     var errorBox = document.getElementById('modalError');
@@ -1427,7 +1446,7 @@ function enviarFormulario(){
       errorBox.style.cssText = 'margin-top:10px;padding:10px 12px;border-radius:8px;background:#fde2e2;color:#a11;font-size:13px;';
       document.getElementById('modalForm').appendChild(errorBox);
     }
-    errorBox.textContent = 'No se ha podido enviar tu inscripción. Comprueba tu conexión e inténtalo de nuevo.';
+    errorBox.textContent = (err && err.mensajeServidor) || 'No se ha podido enviar tu inscripción. Comprueba tu conexión e inténtalo de nuevo.';
   });
 }
 </script>
