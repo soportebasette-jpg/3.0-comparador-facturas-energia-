@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Comparador de Facturas de Luz para Empresas (3.0TD) – TeComparoTodo.es</title>
-<meta name="description" content="Sube la factura de luz de tu empresa (tarifa 3.0TD) y descubre en menos de 1 minuto cuánto puedes ahorrar. Comparamos Plenitude, Eleia, Naturgy y Uni Eléctrica por periodos P1-P6. Gratis y sin compromiso.">
+<meta name="description" content="Sube la factura de luz de tu empresa (tarifa 3.0TD) y descubre en menos de 1 minuto cuánto puedes ahorrar. Comparamos Plenitude, Eleia, Naturgy, TotalEnergies y Uni Eléctrica por periodos P1-P6. Gratis y sin compromiso.">
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
 <link rel="canonical" href="https://facturasenergia.tecomparotodo.es/empresas/">
 <!-- Favicon -->
@@ -27,7 +27,7 @@
   "@context": "https://schema.org",
   "@type": "Service",
   "name": "Comparador de Facturas de Luz para Empresas (3.0TD)",
-  "description": "Herramienta gratuita para subir la factura de luz de tu empresa (tarifa 3.0TD, potencia contratada superior a 15 kW) y descubrir en menos de 1 minuto cuánto puedes ahorrar comparando Plenitude, Eleia, Naturgy y Uni Eléctrica.",
+  "description": "Herramienta gratuita para subir la factura de luz de tu empresa (tarifa 3.0TD, potencia contratada superior a 15 kW) y descubrir en menos de 1 minuto cuánto puedes ahorrar comparando Plenitude, Eleia, Naturgy, TotalEnergies y Uni Eléctrica.",
   "url": "https://facturasenergia.tecomparotodo.es/empresas/",
   "areaServed": { "@type": "Country", "name": "España" },
   "provider": { "@type": "Organization", "name": "TecomparoTodo", "url": "https://www.tecomparotodo.es" },
@@ -35,7 +35,7 @@
 }
 </script>
 <meta property="og:title" content="Comparador de Facturas de Luz para Empresas (3.0TD) – TeComparoTodo.es">
-<meta property="og:description" content="Sube la factura de luz de tu empresa y te decimos exactamente lo que vas a pagar con Plenitude, Eleia, Naturgy y Uni Eléctrica. Gratis, en menos de 1 minuto.">
+<meta property="og:description" content="Sube la factura de luz de tu empresa y te decimos exactamente lo que vas a pagar con Plenitude, Eleia, Naturgy, TotalEnergies y Uni Eléctrica. Gratis, en menos de 1 minuto.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <style>
@@ -365,7 +365,7 @@ footer a{color:var(--teal);text-decoration:underline;cursor:pointer}
     <div class="dz-sub">PDF, JPG, PNG</div>
     <div class="dz-badge">Arrastra o toca para subir</div>
   </div>
-  <div class="dz-hint">💡 Funciona con facturas de cualquier comercializadora, aunque estés con otra distinta a Plenitude, Eleia, Naturgy o Uni Eléctrica</div>
+  <div class="dz-hint">💡 Funciona con facturas de cualquier comercializadora, aunque estés con otra distinta a Plenitude, Eleia, Naturgy, TotalEnergies o Uni Eléctrica</div>
 
   <div class="file-selected" id="fileSelectedLuz">
     <span class="fs-ico">⚡</span>
@@ -487,7 +487,7 @@ if(window['pdfjsLib']){
 </script>
 <script>
 // ============================================================
-//  TARIFAS 3.0TD — Plenitude, Eleia y Naturgy
+//  TARIFAS 3.0TD — Plenitude, Eleia, Naturgy y TotalEnergies
 //  Precios finales (peajes + cargos + margen comercial) por periodo P1-P6,
 //  tal y como figuran en las plantillas comerciales de cada compañía:
 //  - Potencia: €/kW·año (se prorratea a días facturados / 365)
@@ -518,6 +518,14 @@ var T = {
     n:'Naturgy · Plan Fijo Luz 24h', c:'#0077C8', logo:'logo_naturgy.png',
     pot:[22.357345,12.597975,6.461595,5.866645,4.494245,3.422605],
     kwh:[0.175900,0.175900,0.175900,0.175900,0.175900,0.175900]
+  },
+  // TotalEnergies · Clásica 3.0TD (tarifa previsible, 12 meses). Fuente: PDF "Precios base elec V.2026.1410-2810
+  // Península" (precios vigentes 14/10/2026 - 28/10/2026, suministros desde 14/10/26). Peajes y cargos incluidos;
+  // el PDF no incluye el CO comercial ni impuestos. Sin datos de excedentes en el PDF: no hay entrada en EXC_BAT.
+  total_clasica: {
+    n:'TotalEnergies · Clásica', c:'#FF6600', logo:'logo_totalenergy.png',
+    pot:[20.3769,10.6176,4.4815,3.8863,2.5139,1.4423],
+    kwh:[0.297743,0.250841,0.170979,0.138644,0.124462,0.170628]
   }
 };
 // ============================================================
