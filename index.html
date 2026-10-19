@@ -513,7 +513,7 @@ footer a{color:var(--teal);text-decoration:underline;cursor:pointer}
   TeComparoTodo.es · Precios orientativos · Tarifa 3.0TD para empresas y pymes ·
   <a href="https://www.tecomparotodo.es" target="_blank">www.tecomparotodo.es</a> ·
   Tel: <a href="tel:650630005">650 630 005</a>
-  <span style="opacity:.5"> · v19-10-2026</span>
+  <span style="opacity:.5"> · v19-10-2026b</span>
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -1095,7 +1095,27 @@ function consumoTotalDeclarado(t, cands){
 }
 
 // ---------- POTENCIA CONTRATADA POR PERIODO ----------
+// Potencia contratada por periodo, corrigiendo unidades y lecturas del OCR:
+// - Una 3.0TD nunca supera los 1.000 kW: un "1700" es "17,00" sin coma (OCR) → 17 kW.
+// - Si la factura la da en vatios ("17.320 W"), se pasa a kW.
 function leerPotencias(t){
+  var pot = leerPotenciasBruto(t).map(function(v){
+    if(v > 1000){
+      v = (Math.round(v) === v && v / 100 <= 1000) ? v / 100 : v / 1000;
+      if(v > 1000) v = 0;
+    }
+    return Math.round(v * 1000) / 1000;
+  });
+  if(!contarPeriodos(pot)){
+    var mW = t.match(new RegExp('Potencias?\\s+contratadas?[^\\d]{0,30}?' + NUM + '\\s*W\\b', 'i'));
+    if(mW){
+      var w = numES(mW[1]) / 1000;
+      if(w > 0 && w <= 1000) pot = [w,w,w,w,w,w];
+    }
+  }
+  return pot;
+}
+function leerPotenciasBruto(t){
   var pot = [0,0,0,0,0,0], m, re, i;
   function completo(a){ return contarPeriodos(a) >= 6; }
   function rellenar(arr){ for(var k=0;k<6;k++) if(!(pot[k] > 0) && arr[k] > 0) pot[k] = arr[k]; }
