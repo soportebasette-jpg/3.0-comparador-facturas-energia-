@@ -304,6 +304,23 @@ main{max-width:700px;margin:28px auto 100px;padding:0 14px}
 .modal-success h3{font-family:'Nunito',sans-serif;font-weight:900;font-size:1.2rem;color:var(--dark);margin-bottom:8px}
 .modal-success p{font-size:.85rem;color:var(--gray)}
 
+.edit-box{background:#fff;border:1.5px dashed var(--border);border-radius:14px;padding:12px 16px;margin-bottom:20px}
+.edit-box summary{cursor:pointer;font-family:'Nunito',sans-serif;font-weight:800;font-size:.86rem;color:var(--deep)}
+.edit-sub{font-size:.74rem;color:var(--gray);margin:8px 0 10px}
+.edit-grid{display:grid;grid-template-columns:110px repeat(6,1fr);gap:6px;align-items:center;margin-bottom:8px}
+.edit-grid .eh{font-size:.7rem;font-weight:800;color:var(--gray);text-align:center}
+.edit-grid .el{font-size:.74rem;font-weight:700;color:var(--dark)}
+.edit-box input{width:100%;padding:7px 6px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;font-family:inherit;text-align:right;background:#FAFBFA;min-width:0}
+.edit-box input:focus{outline:none;border-color:var(--teal);background:#fff}
+.edit-extra{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 12px}
+.edit-extra label{display:block;font-size:.68rem;font-weight:800;color:var(--gray);margin-bottom:3px}
+.btn-recalc{width:100%;padding:11px;background:linear-gradient(135deg,var(--deep),var(--teal));color:#fff;border:none;border-radius:10px;font-family:'Nunito',sans-serif;font-weight:900;font-size:.9rem;cursor:pointer}
+@media(max-width:600px){
+  .edit-grid{grid-template-columns:repeat(3,1fr)}
+  .edit-grid .eh-blank,.edit-grid .eh{display:none}
+  .edit-grid .el{grid-column:1/-1;margin-top:4px}
+  .edit-extra{grid-template-columns:repeat(2,1fr)}
+}
 footer{text-align:center;padding:18px;color:var(--gray);font-size:.74rem;border-top:1px solid var(--border);margin-top:40px}
 footer a{color:var(--teal);text-decoration:underline;cursor:pointer}
 
@@ -403,6 +420,28 @@ footer a{color:var(--teal);text-decoration:underline;cursor:pointer}
 
   <div class="nota-box" id="notaBox"></div>
   <div class="aviso-box" id="avisoBox" style="display:none"></div>
+  <details class="edit-box" id="editBox" open>
+    <summary>✏️ ¿Algún dato no coincide con tu factura? Corrígelo aquí</summary>
+    <div class="edit-sub">Revisa lo que hemos leído. Si algo no cuadra, cámbialo y pulsa «Recalcular».</div>
+    <div class="edit-grid">
+      <span class="eh-blank"></span><span class="eh">P1</span><span class="eh">P2</span><span class="eh">P3</span><span class="eh">P4</span><span class="eh">P5</span><span class="eh">P6</span>
+      <span class="el">Consumo (kWh)</span>
+      <input type="text" inputmode="decimal" id="edK0" placeholder="P1"><input type="text" inputmode="decimal" id="edK1" placeholder="P2"><input type="text" inputmode="decimal" id="edK2" placeholder="P3"><input type="text" inputmode="decimal" id="edK3" placeholder="P4"><input type="text" inputmode="decimal" id="edK4" placeholder="P5"><input type="text" inputmode="decimal" id="edK5" placeholder="P6">
+      <span class="el">Potencia (kW)</span>
+      <input type="text" inputmode="decimal" id="edP0" placeholder="P1"><input type="text" inputmode="decimal" id="edP1" placeholder="P2"><input type="text" inputmode="decimal" id="edP2" placeholder="P3"><input type="text" inputmode="decimal" id="edP3" placeholder="P4"><input type="text" inputmode="decimal" id="edP4" placeholder="P5"><input type="text" inputmode="decimal" id="edP5" placeholder="P6">
+    </div>
+    <div class="edit-extra">
+      <div><label>Importe total (€)</label><input type="text" inputmode="decimal" id="edImporte"></div>
+      <div><label>Días facturados</label><input type="text" inputmode="numeric" id="edDias"></div>
+      <div><label>Mes (AAAA-MM)</label><input type="text" id="edMes" placeholder="2026-09"></div>
+      <div><label>Excedentes (kWh)</label><input type="text" inputmode="decimal" id="edExc"></div>
+      <div><label>Bono social (€)</label><input type="text" inputmode="decimal" id="edBono"></div>
+      <div><label>Alquiler equipos (€)</label><input type="text" inputmode="decimal" id="edAlq"></div>
+      <div><label>Reactiva (€)</label><input type="text" inputmode="decimal" id="edReac"></div>
+      <div><label>Excesos potencia (€)</label><input type="text" inputmode="decimal" id="edExcPot"></div>
+    </div>
+    <button class="btn-recalc" onclick="recalcularManual()">🔄 Recalcular comparativa</button>
+  </details>
   <div class="tarifas-grid" id="tarifasGrid"></div>
 
   <div class="pdf-wrap">
@@ -474,6 +513,7 @@ footer a{color:var(--teal);text-decoration:underline;cursor:pointer}
   TeComparoTodo.es · Precios orientativos · Tarifa 3.0TD para empresas y pymes ·
   <a href="https://www.tecomparotodo.es" target="_blank">www.tecomparotodo.es</a> ·
   Tel: <a href="tel:650630005">650 630 005</a>
+  <span style="opacity:.5"> · v19-10-2026b</span>
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -510,14 +550,15 @@ var T = {
     kwh:[0.261041,0.224101,0.182867,0.154663,0.134835,0.161689]
   },
   naturgy_fijo: {
-    n:'Naturgy · Plan Fijo Luz (3 tramos)', c:'#004C97', logo:'logo_naturgy.png',
-    pot:[21.143720,11.384350,5.248335,4.653020,3.280620,2.208980], // Al año
+    // Precios Naturgy actualizados 27/10/2026
+    n:'Naturgy · Plan Fijo Luz Tramos', c:'#004C97', logo:'logo_naturgy.png',
+    pot:[21.143720,11.384350,5.248335,4.653020,3.280620,2.208980],
     kwh:[0.251200,0.226200,0.202700,0.189100,0.182800,0.175200]
   },
   naturgy_fijo24h: {
     n:'Naturgy · Plan Fijo Luz 24h', c:'#0077C8', logo:'logo_naturgy.png',
-    pot:[22.357345,12.597975,6.461595,5.866645,4.494245,3.422605], // Al año
-    kwh:[0.193500,0.193500,0.193500,0.193500,0.193500,0.193500]
+    pot:[22.357345,12.597975,6.461595,5.866645,4.494245,3.422605],
+    kwh:[0.193500,0.193500,0.193500,0.193500,0.193500,0.193500] // actualizado 27/10/2026
   },
   // TotalEnergies · Clásica 3.0TD (tarifa previsible, 12 meses). Fuente: PDF "Precios base elec V.2026.1410-2810
   // Península" (precios vigentes 14/10/2026 - 28/10/2026, suministros desde 14/10/26). Peajes y cargos incluidos;
@@ -547,20 +588,21 @@ var INDEXADO = {
     n:'Plenitude · Bassic Index Green', c:'#00847A', logo:'logo_plenitude.png',
     pot:[20.376855,10.617485,4.481470,3.886155,2.513755,1.442115],
     feeInterno: 0.002, // 0,2 cts€/kWh ya incluidos en la tabla oficial: se restan antes de aplicar FEE_FIJO
-    avg12m:[0.11634975,0.10740533333333335,0.0957032,0.09540833333333333,0.094574,0.10663533333333335],
+    // Precios Plenitude "energía + peajes y cargos" (fila con * de la plantilla oficial, fee 0,2 incluido). Actualizado: precios a 30/09/2026.
+    avg12m:[0.179702,0.146319,0.142547,0.126574,0.09928,0.124953],
     meses:{
-      '2025-08':[null,null,0.10183,0.09673,null,0.108966],
-      '2025-09':[null,null,0.092216,0.079131,null,0.098806],
-      '2025-10':[null,null,null,0.125752,0.110985,0.113694],
-      '2025-11':[null,0.101964,0.10251,null,null,0.0963],
-      '2025-12':[0.134971,0.133855,null,null,null,0.112571],
-      '2026-01':[0.134884,0.127148,null,null,null,0.116386],
-      '2026-02':[0.05698,0.043923,null,null,null,0.045115],
-      '2026-03':[null,0.099473,0.085044,null,null,0.087603],
-      '2026-04':[null,null,null,0.086354,0.083964,0.102803],
-      '2026-05':[null,null,null,0.083434,0.088773,0.109299],
-      '2026-06':[null,null,0.096916,0.101049,null,0.128494],
-      '2026-07':[0.138564,0.138069,null,null,null,0.159587]
+      '2025-10':[null,null,null,0.135547,0.115691,0.116592],
+      '2025-11':[null,0.140878,0.121789,null,null,0.099198],
+      '2025-12':[0.198323,0.172769,null,null,null,0.115469],
+      '2026-01':[0.198236,0.166062,null,null,null,0.119284],
+      '2026-02':[0.120332,0.082837,null,null,null,0.048013],
+      '2026-03':[null,0.138387,0.104323,null,null,0.090501],
+      '2026-04':[null,null,null,0.096149,0.08867,0.105701],
+      '2026-05':[null,null,null,0.093229,0.093479,0.112197],
+      '2026-06':[null,null,0.116195,0.110844,null,0.131392],
+      '2026-07':[0.201916,0.176983,null,null,null,0.162485],
+      '2026-08':[null,null,0.166525,0.150528,null,0.185919],
+      '2026-09':[null,null,0.203902,0.173148,null,0.212682]
     }
   },
   eleia_indexado: {
@@ -786,6 +828,44 @@ function extraerTextoArchivo(file){
   return esPDF ? extraerTextoPDF(file) : extraerTextoImagen(file);
 }
 
+// Une los trozos de texto de una página de pdf.js respetando huecos y saltos de línea.
+// Devuelve dos versiones: el orden interno del PDF y el orden visual (filas de arriba a abajo,
+// de izquierda a derecha). Muchas facturas (CHC, Iberdrola...) tienen tablas cuyas celdas
+// vienen pegadas o desordenadas en el orden interno; la versión visual las reconstruye por filas.
+function unirItemsPDF(items){
+  function juntar(lista){
+    var out = '', prev = null;
+    lista.forEach(function(it){
+      if(!it.str) return;
+      var x = it.transform[4], y = it.transform[5];
+      if(prev){
+        var finPrev = prev.transform[4] + (prev.width || 0);
+        if(Math.abs(y - prev.transform[5]) > 2) out += '\n';
+        else if(x - finPrev > 0.8 || x < prev.transform[4]) out += ' ';
+      }
+      out += it.str;
+      prev = it;
+    });
+    return out;
+  }
+  var validos = items.filter(function(it){ return it.str && it.str.trim() !== '' && it.transform; });
+  var orden = juntar(validos);
+  var filas = [];
+  validos.slice().sort(function(a,b){ return b.transform[5] - a.transform[5]; }).forEach(function(it){
+    var f = filas.length ? filas[filas.length-1] : null;
+    if(f && Math.abs(f.y - it.transform[5]) <= 3) f.items.push(it);
+    else filas.push({ y: it.transform[5], items:[it] });
+  });
+  var visual = filas.map(function(f){
+    f.items.sort(function(a,b){ return a.transform[4] - b.transform[4]; });
+    // misma fila: se fuerza la misma y para que juntar() no meta saltos de línea
+    return juntar(f.items.map(function(it){
+      return { str: it.str, width: it.width, transform: [0,0,0,0,it.transform[4], f.y] };
+    }));
+  }).join('\n');
+  return orden + '\n' + visual;
+}
+
 function extraerTextoPDF(file){
   if(!window['pdfjsLib']){
     console.error('[Comparador] pdfjsLib no está cargado.');
@@ -795,21 +875,43 @@ function extraerTextoPDF(file){
     return pdfjsLib.getDocument({data: buf}).promise.then(function(pdf){
       var paginas = [];
       for(var i = 1; i <= pdf.numPages; i++){
-        paginas.push(
-          pdf.getPage(i).then(function(page){
-            return page.getTextContent().then(function(content){
-              return content.items.map(function(it){
-                return it.str + (it.hasEOL ? '\n' : '');
-              }).join('');
-            });
-          })
-        );
+        paginas.push(pdf.getPage(i).then(function(page){
+          return page.getTextContent().then(function(content){ return unirItemsPDF(content.items); });
+        }));
       }
-      return Promise.all(paginas).then(function(textos){ return textos.join('\n'); });
+      return Promise.all(paginas).then(function(textos){
+        var texto = textos.join('\n');
+        // PDF escaneado (sin capa de texto): se renderizan las páginas y se pasan por OCR
+        if(texto.replace(/\s/g,'').length < 80) return ocrPaginasPDF(pdf);
+        return texto;
+      });
     });
   }).catch(function(err){
     console.error('[Comparador] Error leyendo PDF con pdf.js:', err);
     return '';
+  });
+}
+
+function ocrPaginasPDF(pdf){
+  if(!window['Tesseract']) return Promise.resolve('');
+  var n = Math.min(pdf.numPages, 4), cadena = Promise.resolve(''), textos = [];
+  for(var i = 1; i <= n; i++){
+    (function(num){
+      cadena = cadena.then(function(){
+        return pdf.getPage(num).then(function(page){
+          var vp = page.getViewport({ scale: 2.2 });
+          var canvas = document.createElement('canvas');
+          canvas.width = vp.width; canvas.height = vp.height;
+          return page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise.then(function(){
+            return Tesseract.recognize(canvas, 'spa').then(function(r){ textos.push(r.data.text || ''); });
+          });
+        });
+      });
+    })(i);
+  }
+  return cadena.then(function(){ return textos.join('\n'); }).catch(function(e){
+    console.error('[Comparador] Error OCR PDF:', e);
+    return textos.join('\n');
   });
 }
 
@@ -818,7 +920,7 @@ function extraerTextoImagen(file){
   return new Promise(function(resolve){
     var reader = new FileReader();
     reader.onload = function(){
-      Tesseract.recognize(reader.result, 'spa')
+      prepararImagenOCR(reader.result).then(function(img){ return Tesseract.recognize(img, 'spa'); })
         .then(function(result){ resolve(result.data.text || ''); })
         .catch(function(err){ console.error('Error OCR imagen:', err); resolve(''); });
     };
@@ -827,10 +929,38 @@ function extraerTextoImagen(file){
   });
 }
 
+// Amplía la imagen (las capturas de móvil traen letra muy pequeña), la pasa a escala de grises
+// y sube el contraste: el OCR lee mucho mejor comas, decimales y tablas.
+function prepararImagenOCR(dataURL){
+  return new Promise(function(resolve){
+    var img = new Image();
+    img.onload = function(){
+      try{
+        var escala = Math.min(3, Math.max(1, 2600 / img.width));
+        var c = document.createElement('canvas');
+        c.width = Math.round(img.width * escala); c.height = Math.round(img.height * escala);
+        var ctx = c.getContext('2d');
+        ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, c.width, c.height);
+        var px = ctx.getImageData(0, 0, c.width, c.height), d = px.data;
+        for(var i=0;i<d.length;i+=4){
+          var g = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+          g = Math.max(0, Math.min(255, (g - 128) * 1.35 + 128));
+          d[i] = d[i+1] = d[i+2] = g;
+        }
+        ctx.putImageData(px, 0, 0);
+        resolve(c);
+      }catch(e){ resolve(dataURL); }
+    };
+    img.onerror = function(){ resolve(dataURL); };
+    img.src = dataURL;
+  });
+}
+
 // Normaliza separador decimal español ("247,38" o "5,75") a número JS
 function numES(str){
   if(!str) return 0;
-  str = str.trim();
+  str = String(str).trim();
   if(str.indexOf(',') !== -1) return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
   if(str.indexOf('.') !== -1){
     var partes = str.split('.');
@@ -844,219 +974,441 @@ function numES(str){
 }
 function numESPotencia(str){
   if(!str) return 0;
-  str = str.trim();
+  str = String(str).trim();
   if(str.indexOf(',') !== -1) return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
   return parseFloat(str) || 0;
 }
 
+// Número en formato español o inglés: "1.604,00", "598,00", "17", "95.24"
+var NUM_RE = '\\d{1,3}(?:\\.\\d{3})+(?:,\\d+)?|\\d+(?:[.,]\\d+)?';
+var NUM = '(' + NUM_RE + ')';
+var ANTES = '(?:^|[^\\d.,])'; // evita empezar a leer a mitad de un número
+function cerca(a, b, tol){ return Math.abs(a - b) <= tol; }
+function sumar(arr){ return arr.reduce(function(a,b){ return a+b; }, 0); }
+function contarPeriodos(arr){ return arr.filter(function(v){ return v > 0; }).length; }
+function numerosDe(str){ return (str.match(new RegExp(NUM_RE, 'g')) || []); }
+
+// ---------- CONSUMO POR PERIODO: se prueban todos los formatos conocidos y se elige el mejor ----------
+function candidatosConsumo(t){
+  var cands = [], m, re;
+  function nuevo(src){ return { src:src, kwh:[0,0,0,0,0,0], vistos:{} }; }
+  function poner(c, idx, v){ if(!c.vistos[idx]){ c.vistos[idx] = true; c.kwh[idx] = v; } }
+  function guardar(c){ if(sumar(c.kwh) > 0 || Object.keys(c.vistos).length) cands.push(c); }
+
+  // 1) "P1: 123 kWh", "P3 598 kWh"
+  var c1 = nuevo('etiquetas');
+  re = new RegExp('\\bP([1-6])\\s*[:=]?\\s*' + NUM + '\\s*kWh', 'gi');
+  while((m = re.exec(t)) !== null) poner(c1, parseInt(m[1],10)-1, numES(m[2]));
+  guardar(c1);
+
+  // 2) Lecturas de Endesa: "P3 1.18.3 21.751,020 23.784,020 1,00 0,000 2.033,000"
+  var c2 = nuevo('lecturas Endesa');
+  re = /\bP([1-6])\s+1\.18\.[1-6]\s+(?:[\d.]+,\d+\s+){4}([\d.]+,\d+)/gi;
+  while((m = re.exec(t)) !== null) poner(c2, parseInt(m[1],10)-1, numES(m[2]));
+  guardar(c2);
+
+  // 3) Lecturas tipo Iberdrola: "Energía activa P2 28/02/2026 11.007 31/03/2026 11.224 217 kWh"
+  var c3 = nuevo('lecturas Iberdrola');
+  re = new RegExp('Energ[ií]a\\s+activa\\s+P([1-6])\\s+\\d{1,2}\\/\\d{1,2}\\/\\d{2,4}\\s+[\\d.,]+\\s+\\d{1,2}\\/\\d{1,2}\\/\\d{2,4}\\s+[\\d.,]+\\s+' + NUM + '\\s*kWh', 'gi');
+  while((m = re.exec(t)) !== null) poner(c3, parseInt(m[1],10)-1, numES(m[2]));
+  guardar(c3);
+
+  // 4) Fila de tabla con 6 valores (y opcionalmente el total): "Consumo(kWh) 0,00 0,00 598,00 472,00 0,00 534,00 1.604,00"
+  //    (CHC, Gesternova, Holaluz, Audax...). Se descartan filas con más de 7 números (históricos mensuales).
+  re = new RegExp('(?:Consumo|Energ[ií]a\\s+activa|E\\.?\\s*Activa|Activa)\\s*\\(?\\s*kWh\\s*\\)?\\s*:?\\s*((?:(?:' + NUM_RE + ')\\s*(?:kWh)?\\s+){5,8}(?:' + NUM_RE + '))', 'gi');
+  while((m = re.exec(t)) !== null){
+    var nums = numerosDe(m[1]).map(numES);
+    if(nums.length < 6 || nums.length > 7) continue;
+    // 6 números donde el último es la suma de los otros 5: falta una celda (OCR), no se puede asignar a periodos
+    if(nums.length === 6 && nums[5] > 0 && cerca(nums[5], sumar(nums.slice(0,5)), Math.max(1, nums[5]*0.01))) continue;
+    var c4 = nuevo('fila de tabla');
+    for(var i=0;i<6;i++) poner(c4, i, nums[i]);
+    if(nums.length === 7) c4.totalFila = nums[6];
+    guardar(c4);
+  }
+
+  // 4b) Fila de 6 valores + total sin etiqueta delante (PDF con columnas desordenadas):
+  //     siete números seguidos donde el séptimo es la suma de los seis anteriores.
+  var tokens = [], reTok = new RegExp(NUM_RE, 'g'), mt;
+  while((mt = reTok.exec(t)) !== null){
+    var antes = mt.index > 0 ? t.charAt(mt.index-1) : ' ';
+    if(/[\d.,\/]/.test(antes)) continue;
+    tokens.push({ v: numES(mt[0]), ini: mt.index, fin: mt.index + mt[0].length });
+  }
+  for(var a=0; a + 6 < tokens.length; a++){
+    var seguidos = true;
+    for(var b=a; b<a+6 && seguidos; b++) if(!/^\s+$/.test(t.slice(tokens[b].fin, tokens[b+1].ini))) seguidos = false;
+    if(!seguidos) continue;
+    if(/^\s*(?:kW|€|%|kVA)/i.test(t.slice(tokens[a+6].fin, tokens[a+6].fin+5))) continue;
+    var seis = tokens.slice(a, a+6).map(function(x){ return x.v; }), tot = tokens[a+6].v;
+    if(tot > 0 && contarPeriodos(seis) >= 2 && cerca(sumar(seis), tot, Math.max(0.5, tot*0.005))){
+      var c4b = nuevo('fila con total');
+      for(var q=0;q<6;q++) poner(c4b, q, seis[q]);
+      c4b.totalFila = tot;
+      guardar(c4b);
+    }
+  }
+
+  // 5) e-distribución: "Consumo del periodo 0 kWh 0 kWh 2.740 kWh ..." (seis valores seguidos)
+  re = new RegExp('Consumo\\s+del\\s+periodo\\s*((?:(?:' + NUM_RE + ')\\s*kWh\\s*){6})', 'i');
+  m = t.match(re);
+  if(m){
+    var n5 = numerosDe(m[1]).map(numES), c5 = nuevo('distribuidora');
+    for(var j=0;j<6;j++) poner(c5, j, n5[j]);
+    guardar(c5);
+  }
+
+  // 6) "Punta/Llano/Valle NN kWh" → P1/P2/P3
+  var c6 = nuevo('punta-llano-valle'), mapa = {punta:0, llano:1, valle:2};
+  re = new RegExp('\\b(Punta|Llano|Valle)\\b[^\\d]{0,40}?' + NUM + '\\s*kWh', 'gi');
+  while((m = re.exec(t)) !== null) poner(c6, mapa[m[1].toLowerCase()], numES(m[2]));
+  guardar(c6);
+
+  return cands;
+}
+
+// Consumo total declarado en la factura (para validar el desglose por periodos)
+function consumoTotalDeclarado(t, cands){
+  var m;
+  for(var i=0;i<cands.length;i++){
+    var c = cands[i];
+    if(c.totalFila && cerca(c.totalFila, sumar(c.kwh), Math.max(1, c.totalFila*0.01))) return c.totalFila;
+  }
+  var patrones = [
+    new RegExp('Consumo\\s+total[^\\d]{0,40}?' + NUM + '\\s*kWh', 'i'),
+    new RegExp('Total\\s+consumo[^\\d]{0,40}?' + NUM + '\\s*kWh', 'i'),
+    new RegExp(ANTES + NUM + '\\s*kWh\\s*(?:de\\s+esta\\s+factura|\\.?\\s*Consumo\\s+total)', 'i'),
+    new RegExp('Eficiencia[\\s\\S]{0,120}?' + ANTES + NUM + '\\s*kWh\\s*x', 'i'),   // línea del FNEE
+    new RegExp('\\bTOTAL\\b[^\\d€]{0,20}' + NUM + '\\s*kWh', 'i')
+  ];
+  for(var p=0;p<patrones.length;p++){
+    m = t.match(patrones[p]);
+    if(m && numES(m[1]) > 0) return numES(m[1]);
+  }
+  // Líneas de facturación "598,00 kWh x 0,226755 €/kWh": si la mayor es la suma del resto (línea FNEE), es el total;
+  // si no, se suman las distintas.
+  var lineas = [], re = new RegExp(ANTES + NUM + '\\s*kWh\\s*[x×*]\\s*-?\\s*(?:' + NUM_RE + ')\\s*€?\\s*\\/\\s*kWh', 'gi');
+  while((m = re.exec(t)) !== null) lineas.push(numES(m[1]));
+  if(lineas.length){
+    var max = Math.max.apply(null, lineas), resto = sumar(lineas) - max;
+    if(lineas.length > 1 && cerca(max, resto, Math.max(1, max*0.01))) return max;
+  }
+  return 0;
+}
+
+// ---------- POTENCIA CONTRATADA POR PERIODO ----------
+// Potencia contratada por periodo, corrigiendo unidades y lecturas del OCR:
+// - Una 3.0TD nunca supera los 1.000 kW: un "1700" es "17,00" sin coma (OCR) → 17 kW.
+// - Si la factura la da en vatios ("17.320 W"), se pasa a kW.
+function leerPotencias(t){
+  var pot = leerPotenciasBruto(t).map(function(v){
+    if(v > 1000){
+      v = (Math.round(v) === v && v / 100 <= 1000) ? v / 100 : v / 1000;
+      if(v > 1000) v = 0;
+    }
+    return Math.round(v * 1000) / 1000;
+  });
+  if(!contarPeriodos(pot)){
+    var mW = t.match(new RegExp('Potencias?\\s+contratadas?[^\\d]{0,30}?' + NUM + '\\s*W\\b', 'i'));
+    if(mW){
+      var w = numES(mW[1]) / 1000;
+      if(w > 0 && w <= 1000) pot = [w,w,w,w,w,w];
+    }
+  }
+  return pot;
+}
+function leerPotenciasBruto(t){
+  var pot = [0,0,0,0,0,0], m, re, i;
+  function completo(a){ return contarPeriodos(a) >= 6; }
+  function rellenar(arr){ for(var k=0;k<6;k++) if(!(pot[k] > 0) && arr[k] > 0) pot[k] = arr[k]; }
+
+  // 1) Etiquetada por periodo: "P1=17,32kW; P2=17,32kW" / "P6 15,1 kW x 31 días" / "P1: 17 kW"
+  re = new RegExp('\\bP([1-6])\\s*[:=]?\\s*' + NUM + '\\s*kW(?!h)', 'gi');
+  var a1 = [0,0,0,0,0,0];
+  while((m = re.exec(t)) !== null){ var ix = parseInt(m[1],10)-1; if(!a1[ix]) a1[ix] = numESPotencia(m[2]); }
+  rellenar(a1);
+  if(completo(pot)) return pot;
+
+  // 2) Tabla: "Potencias contratadas (kW) P1 P2 P3 P4 P5 P6 17,00 17,00 ..." / "Pot. Contratadas (kW) 17,00 ..."
+  re = new RegExp('(?:Potencias?|Pot\\.?)\\s+contratadas?(?:\\s*\\(?\\s*kW\\s*\\)?|\\s*P[1-6]|\\s*:)*\\s*((?:(?:' + NUM_RE + ')\\s*(?:kW)?\\s*[;,]?\\s+){5}(?:' + NUM_RE + '))', 'gi');
+  while((m = re.exec(t)) !== null){
+    var n2 = numerosDe(m[1]).map(numESPotencia);
+    if(n2.length >= 6 && n2.slice(0,6).every(function(v){ return v > 0 && v < 5000; })){ rellenar(n2); break; }
+  }
+  if(completo(pot)) return pot;
+
+  // 3) Líneas de facturación sin etiqueta: "17,00 kW x 0,057279 €/kW día x 30 día(s)" (una por periodo)
+  re = new RegExp(ANTES + NUM + '\\s*kW\\s*[x×*]\\s*(?:' + NUM_RE + ')\\s*[€E]?\\s*\\/\\s*kW', 'gi');
+  var a3 = [];
+  while((m = re.exec(t)) !== null) a3.push(numESPotencia(m[1]));
+  if(a3.length >= 6 && a3.length % 6 === 0) rellenar(a3.slice(0,6));
+  if(completo(pot)) return pot;
+
+  // 4) Un único valor ("Potencia contratada: 17 kW", "Punta 17 kW"): se aplica a los periodos que falten
+  var unico = 0;
+  var patrones = [
+    new RegExp('Potencias?\\s+contratadas?[^\\d]{0,30}?' + NUM + '\\s*kW(?!h)', 'i'),
+    new RegExp('\\bPotencia\\s*(?:punta|contratada)?\\s*[:=]?\\s*' + NUM + '\\s*kW(?!h)', 'i'),
+    new RegExp('Punta\\s+' + NUM + '\\s*kW(?!h)', 'i')
+  ];
+  for(i=0;i<patrones.length && !unico;i++){ m = t.match(patrones[i]); if(m) unico = numESPotencia(m[1]); }
+  if(!unico && contarPeriodos(pot)) unico = pot[0] > 0 ? pot[0] : Math.max.apply(null, pot);
+  if(!unico){
+    var reL = new RegExp(ANTES + NUM + '\\s*kW\\s*[x×*]\\s*\\(?\\s*\\d', 'gi'), frec = {}, mejor = 0;
+    while((m = reL.exec(t)) !== null){
+      var vv = numESPotencia(m[1]);
+      if(vv > 0 && vv < 5000){ frec[vv] = (frec[vv]||0) + 1; if(!mejor || frec[vv] > frec[mejor]) mejor = vv; }
+    }
+    unico = mejor;
+  }
+  if(unico) for(i=0;i<6;i++) if(!(pot[i] > 0)) pot[i] = unico;
+  return pot;
+}
+
+// ---------- IMPORTE TOTAL ----------
+// Además de buscar la etiqueta "TOTAL", se valida con la cuadratura Base imponible + IVA = Total,
+// que funciona aunque el PDF o el OCR desordenen las columnas de conceptos e importes.
+function leerImporte(t){
+  var DIN = '(\\d{1,3}(?:\\.\\d{3})+(?:,\\d{1,2})?|\\d+(?:[.,]\\d{1,2})?)';
+  var EUR = '\\s*(?:€|EUR\\b|euros?\\b)';
+  var m, re;
+
+  var fuertes = [
+    'TOTAL\\s+IMPORTE\\s+(?:DE\\s+LA\\s+)?FACTURA', 'TOTAL\\s+A\\s+PAGAR', 'IMPORTE\\s+A\\s+PAGAR',
+    'TOTAL\\s+(?:DE\\s+LA\\s+)?FACTURA', 'IMPORTE\\s+TOTAL(?:\\s+DE\\s+LA\\s+FACTURA)?', 'TOTAL\\s+IMPORTE'
+  ];
+  var candFuerte = 0;
+  for(var i=0;i<fuertes.length && !candFuerte;i++){
+    m = t.match(new RegExp(fuertes[i] + '[^\\d€]{0,25}?' + ANTES + DIN + EUR, 'i'));
+    if(m) candFuerte = numES(m[1]);
+  }
+  var candTotal = 0;
+  m = t.match(new RegExp('\\bTOTAL\\b[^\\d€]{0,25}?' + ANTES + DIN + EUR, 'i'));
+  if(m) candTotal = numES(m[1]);
+
+  // Cuadratura: todos los importes en € del documento; se busca base + IVA/IGIC = total
+  var importes = [];
+  re = new RegExp(ANTES + '-?' + DIN + EUR + '(?!\\s*\\/)', 'gi');
+  while((m = re.exec(t)) !== null){ var v = numES(m[1]); if(v > 0 && importes.indexOf(v) === -1) importes.push(v); }
+  var candCuadre = 0;
+  var tasas = [0.21, 0.10, 0.05, 0.07, 0.03, 0.095, 0.15];
+  importes.forEach(function(base){
+    tasas.forEach(function(tasa){
+      var ivaEsp = base * tasa;
+      importes.forEach(function(iva){
+        if(!cerca(iva, ivaEsp, Math.max(0.02, ivaEsp*0.003))) return;
+        importes.forEach(function(tot){
+          if(cerca(tot, base + iva, 0.02) && tot > candCuadre) candCuadre = tot;
+        });
+      });
+    });
+  });
+
+  // Base imponible ("Base I.V.A. 447,35 €", "Base imponible 447,35 €"): el total debe ser base × (1 + IVA/IGIC).
+  // Sirve para detectar lecturas erróneas del OCR, p.ej. "541,29€" leído como "59129€" (sin coma).
+  var base = 0;
+  m = t.match(new RegExp('\\bBase\\b[^\\d€]{0,22}?' + ANTES + DIN + EUR, 'i'));
+  if(m) base = numES(m[1]);
+  var tasaLeida = null;
+  m = t.match(/\b(?:I\.?V\.?A|IGIC)\b[^\d%€]{0,10}(\d{1,2}(?:[.,]\d+)?)\s*%/i);
+  if(m) tasaLeida = numES(m[1]) / 100;
+  var ts = tasaLeida != null ? tasaLeida : (typeof tasaImpuesto === 'function' ? tasaImpuesto() : 0.21);
+  // El OCR a veces se come la coma ("447,35" → "44735"): para números enteros grandes también se prueba ÷100
+  function variantes(v){ return (v >= 1000 && Math.round(v) === v) ? [v, v/100] : [v]; }
+  var bases = base > 0 ? variantes(base) : [];
+  function encajaCon(v, b){ return tasas.concat([0]).some(function(x){ return cerca(v, b*(1+x), Math.max(0.05, v*0.003)); }); }
+  var lista = [candFuerte, candCuadre, candTotal].filter(function(v){ return v > 0; });
+  var alts = [];
+  // 1º lecturas del total que cuadran con la base imponible; 2º total calculado con la base; 3º el resto
+  lista.forEach(function(v){ variantes(v).forEach(function(x){ if(bases.some(function(bb){ return encajaCon(x, bb); })) alts.push(x); }); });
+  bases.forEach(function(bb){ alts.push(Math.round(bb*(1+ts)*100)/100); });
+  lista.forEach(function(v){ variantes(v).forEach(function(x){ alts.push(x); }); });
+  alts = alts.filter(function(v, i){ return alts.indexOf(v) === i; });
+  return { valor: alts.length ? alts[0] : 0, alternativas: alts };
+}
+
+// ---------- DÍAS Y MES DE FACTURACIÓN ----------
+function leerFechas(t){
+  var res = { dias: 30, mes: null, diasLeidos: false };
+  var FECHA = '(\\d{1,2})[.\\/\\-](\\d{1,2})[.\\/\\-](\\d{2,4})';
+  var SEP = '\\s*(?:-|–|al?|hasta)\\s*';
+  function aFecha(d, mm, y){ y = parseInt(y,10); if(y < 100) y += 2000; return new Date(y, parseInt(mm,10)-1, parseInt(d,10)); }
+  function aplicarRango(m){
+    var ini = aFecha(m[1],m[2],m[3]), fin = aFecha(m[4],m[5],m[6]);
+    var diff = Math.round((fin - ini) / 86400000);
+    if(!(diff > 0 && diff < 400)) return false;
+    // "01.09.2026 - 30.09.2026": ambos días incluidos (30 días). Se confirma con el texto ("x 30 días").
+    var ultimoDelMes = new Date(fin.getFullYear(), fin.getMonth()+1, 0).getDate() === fin.getDate();
+    var inclusivo = (ini.getDate() === 1 && ultimoDelMes) || new RegExp('\\b' + (diff+1) + '\\s*d[ií]a').test(t);
+    res.dias = inclusivo ? diff + 1 : diff;
+    res.diasLeidos = true;
+    res.mes = fin.getFullYear() + '-' + ('0' + (fin.getMonth()+1)).slice(-2);
+    return true;
+  }
+
+  var mExpl = t.match(/D[IÍ]AS\s+FACTURADOS:?\s*(\d{1,3})/i);
+  var mPer = t.match(new RegExp('Per[ií]odo\\s+(?:de\\s+)?(?:facturaci[oó]n|consumo|facturado)\\s*:?\\s*(?:del?\\s*)?' + FECHA + SEP + FECHA, 'i'));
+  if(mPer) aplicarRango(mPer);
+
+  if(!res.diasLeidos){
+    // Rangos con días explícitos: "(28/02/2026 - 31/03/2026) (31 días)"
+    var mapaDias = {}, hay = false, mr;
+    var reA = new RegExp(FECHA + SEP + FECHA + '\\)?\\s*\\(?\\s*(\\d{1,3})\\s*d[ií]as\\)?', 'gi');
+    while((mr = reA.exec(t)) !== null){ mapaDias[mr.slice(1,7).join('.')] = parseInt(mr[7],10); hay = true; }
+    if(hay){
+      res.dias = 0; for(var k in mapaDias) res.dias += mapaDias[k];
+      res.diasLeidos = true;
+    }
+  }
+  if(!res.diasLeidos){
+    // Cualquier rango de fechas (el que más se repita, que suele ser el periodo facturado)
+    var reR = new RegExp(FECHA + SEP + FECHA, 'g'), mR, cuenta = {}, mejor = null;
+    while((mR = reR.exec(t)) !== null){
+      var clave = mR.slice(1,7).join('.');
+      cuenta[clave] = (cuenta[clave] || 0) + 1;
+      if(!mejor || cuenta[clave] > cuenta[mejor.slice(1,7).join('.')]) mejor = mR;
+    }
+    if(mejor) aplicarRango(mejor);
+  }
+  if(mExpl){ res.dias = parseInt(mExpl[1],10); res.diasLeidos = true; }
+  if(!res.diasLeidos){
+    // "x 30 días" en las líneas de potencia
+    var mx = t.match(/[x×]\s*(\d{1,3})\s*d[ií]a/i);
+    if(mx){ res.dias = parseInt(mx[1],10); res.diasLeidos = true; }
+  }
+  if(!res.mes){
+    var mF = t.match(new RegExp(FECHA));
+    if(mF){
+      var mmF = parseInt(mF[2],10), yy = parseInt(mF[3],10);
+      if(yy < 100) yy += 2000;
+      if(mmF >= 1 && mmF <= 12) res.mes = yy + '-' + ('0' + mmF).slice(-2);
+    }
+  }
+  return res;
+}
+
+// ---------- OTROS CONCEPTOS (se pagan igual con cualquier comercializadora) ----------
+// Bono social, alquiler de equipos, energía reactiva y excesos de potencia. Se suman a todas las propuestas
+// para que la comparativa sea con la factura completa (mismo criterio que el Excel de comparación).
+function importeTras(t, etiqueta, excluir){
+  var DIN = '(\\d{1,3}(?:\\.\\d{3})+(?:,\\d{1,2})?|\\d+(?:[.,]\\d{1,2})?)';
+  var re = new RegExp(etiqueta, 'gi'), m;
+  while((m = re.exec(t)) !== null){
+    var ventana = t.slice(m.index + m[0].length, m.index + m[0].length + 110);
+    if(excluir && excluir.test(ventana.slice(0, 12))) continue;
+    var reImp = new RegExp(ANTES + '-?' + DIN + '\\s*(?:€|EUR\\b)(?!\\s*\\/)', 'g'), mi;
+    if((mi = reImp.exec(ventana)) !== null) return numES(mi[1]);
+  }
+  return 0;
+}
+function leerOtrosConceptos(t, dias){
+  var o = { bono:0, alquiler:0, reactiva:0, excesos:0 };
+  o.bono = importeTras(t, 'Financiaci[oó]n\\s+(?:del\\s+)?Bono\\s+Social(?:\\s+Fijo)?');
+  if(!o.bono){
+    // "(9,011295 €/Año / 365 días) x 30 días"
+    var mb = t.match(new RegExp('Bono\\s+Social[^€]{0,40}?\\(?\\s*' + NUM + '\\s*€\\s*\\/\\s*A[ñn]o\\s*\\/\\s*365\\s*d[ií]as\\s*\\)?\\s*[x×]\\s*(\\d{1,3})', 'i'));
+    if(mb) o.bono = numES(mb[1]) / 365 * parseInt(mb[2],10);
+  }
+  o.alquiler = importeTras(t, 'Alquiler\\s+(?:de\\s+(?:los\\s+)?)?(?:contador(?:es)?|equipos?(?:\\s+de\\s+(?:medida|control))?)');
+  o.reactiva = importeTras(t, '(?:Complemento\\s+(?:por\\s+)?|T[ée]rmino\\s+(?:de\\s+)?|Recargo\\s+(?:por\\s+)?|Penalizaci[oó]n\\s+(?:por\\s+)?|Importe\\s+(?:por\\s+)?)?Energ[ií]a\\s+reactiva', /k\s*VA?r?h|\(k/i);
+  o.excesos = importeTras(t, '(?:Exceso|Excesos)\\s+(?:de\\s+)?potencia', /\(?\s*kW\b|\(k/i);
+  // Valores fuera de rango (lectura dudosa): se descartan
+  Object.keys(o).forEach(function(k){ if(!(o[k] > 0 && o[k] < 5000)) o[k] = 0; });
+  return o;
+}
+function totalOtros(o){ return o ? (o.bono||0) + (o.alquiler||0) + (o.reactiva||0) + (o.excesos||0) : 0; }
+
 // Analiza el texto de una factura de luz 3.0TD: consumo por periodo P1-P6 (kWh),
-// potencia contratada (kW), días facturados e importe total.
+// potencia contratada por periodo (kW), días facturados, excedentes e importe total.
 function parsearFacturaLuz3TD(texto){
-  var datos = { kwhPeriodos:[0,0,0,0,0,0], potencia:0, potPeriodos:[0,0,0,0,0,0], excedentes:0, importe:0, dias:30, periodosDetectados:0 };
+  var datos = { kwhPeriodos:[0,0,0,0,0,0], potencia:0, potPeriodos:[0,0,0,0,0,0], excedentes:0, importe:0, otros:{ bono:0, alquiler:0, reactiva:0, excesos:0 },
+                importeLeido:false, dias:30, mes:null, periodosDetectados:0, consumoEstimado:false };
   if(!texto) return datos;
-  var t = texto.replace(/\s+/g, ' ');
-  // Importe monetario: admite miles con punto y decimales con coma ("2.027,71" o "351,92"),
-  // y también decimales con punto sin agrupar miles ("95.24"), formato de algunas comercializadoras.
-  // La interpretación correcta (miles vs. decimal) la resuelve numES().
-  var DINERO = '(\\d{1,3}(?:[.,]\\d{3})*(?:[.,]\\d{1,2})?)';
+  var t = texto.replace(/[ \t  ]+/g, ' ').replace(/\s*\n\s*/g, '\n').replace(/\s+/g, ' ');
 
-  // --- Consumo por periodo (P1-P6), sin sumar: cada periodo se guarda por separado ---
-  var reP = /\bP([1-6]):?\s*(\d{1,6}(?:[.,]\d+)?)\s*kWh/gi;
-  var mp3, periodosVistos = {}, encontrados = 0;
-  while((mp3 = reP.exec(t)) !== null){
-    var idx = parseInt(mp3[1],10) - 1;
-    if(!periodosVistos[idx]){
-      periodosVistos[idx] = true;
-      datos.kwhPeriodos[idx] = numES(mp3[2]);
-      encontrados++;
-    }
-  }
+  // --- Consumo ---
+  var cands = candidatosConsumo(t);
+  var totalDecl = consumoTotalDeclarado(t, cands);
+  var elegido = null;
+  cands.forEach(function(c){
+    var s = sumar(c.kwh), n = contarPeriodos(c.kwh);
+    if(s <= 0) return;
+    c.cuadra = totalDecl > 0 && cerca(s, totalDecl, Math.max(1, totalDecl*0.02));
+    if(!elegido) { elegido = c; return; }
+    var se = sumar(elegido.kwh);
+    if(c.cuadra && !elegido.cuadra) elegido = c;
+    else if(c.cuadra === elegido.cuadra && (s > se + 0.5 || (cerca(s, se, 0.5) && n > contarPeriodos(elegido.kwh)))) elegido = c;
+  });
+  // Un desglose que se queda muy corto frente al total declarado no es fiable (p.ej. solo se leyó P1)
+  // (o que se pasa de largo): se descarta y se usa el total declarado
+  if(elegido && totalDecl > 0 && !elegido.cuadra && Math.abs(sumar(elegido.kwh) - totalDecl) > totalDecl * 0.1) elegido = null;
 
-  if(encontrados === 0){
-    // Tabla de lecturas de Endesa: "ENERGÍA ACTIVA kWh P3 1.18.3 21.751,020 23.784,020 1,00 0,000 2.033,000"
-    // (código de contador, lectura inicial, lectura final, multiplicador, ajuste y por último el consumo).
-    // Se exige el código 1.18.x (energía activa) para no leer la energía reactiva (1.58.x).
-    var reEndesaLect = /\bP([1-6])\s+1\.18\.[1-6]\s+(?:[\d.]+,\d+\s+){4}([\d.]+,\d+)/gi;
-    var mEnd, vistosEnd = {};
-    while((mEnd = reEndesaLect.exec(t)) !== null){
-      var iEnd = parseInt(mEnd[1],10) - 1;
-      if(!vistosEnd[iEnd]){
-        vistosEnd[iEnd] = true;
-        datos.kwhPeriodos[iEnd] = numES(mEnd[2]);
-        encontrados++;
-      }
-    }
-  }
-
-  if(encontrados === 0){
-    // Tabla de lecturas (p.ej. Iberdrola): "Energía activa P2 28/02/2026 11.007 31/03/2026 11.224 217 kWh"
-    // (etiqueta de periodo, fecha y lectura inicial, fecha y lectura final, y por último el consumo).
-    var reTabla = /Energ[ií]a\s+activa\s+P([1-6])\s+\d{1,2}\/\d{1,2}\/\d{2,4}\s+[\d.,]+\s+\d{1,2}\/\d{1,2}\/\d{2,4}\s+[\d.,]+\s+(\d{1,6}(?:[.,]\d+)?)\s*kWh/gi;
-    var mTab, vistosTabla = {};
-    while((mTab = reTabla.exec(t)) !== null){
-      var iTab = parseInt(mTab[1],10) - 1;
-      if(!vistosTabla[iTab]){
-        vistosTabla[iTab] = true;
-        datos.kwhPeriodos[iTab] = numES(mTab[2]);
-        encontrados++;
-      }
-    }
-  }
-
-  if(encontrados === 0){
-    // Formato distribuidora (p.ej. e-distribución): "Activa - Consumo del periodo 0 kWh 0 kWh 2.740 kWh ..."
-    // seis valores seguidos, uno por periodo P1-P6, sin etiqueta "P1:" individual.
-    var reActiva = /Consumo\s+del\s+periodo\s*((?:\d{1,6}(?:[.,]\d+)?\s*kWh\s*){6})/i;
-    var mAct = t.match(reActiva);
-    if(mAct){
-      var numsAct = mAct[1].match(/\d{1,6}(?:[.,]\d+)?/g);
-      if(numsAct && numsAct.length >= 6){
-        for(var ia=0; ia<6; ia++){ datos.kwhPeriodos[ia] = numES(numsAct[ia]); }
-        encontrados = 6;
-      }
-    }
-  }
-
-  if(encontrados === 0){
-    // Formato "Punta/Llano/Valle NN kWh" → se mapea a P1/P2/P3
-    var mapa = {punta:0, llano:1, valle:2};
-    var rePeriodo = /\b(Punta|Llano|Valle)\b[\s\S]{0,40}?(\d{1,6}(?:[.,]\d+)?)\s*kWh/gi;
-    var mp2, vistos = {};
-    while((mp2 = rePeriodo.exec(t)) !== null){
-      var nombre = mp2[1].toLowerCase();
-      if(!vistos[nombre]){
-        vistos[nombre] = true;
-        datos.kwhPeriodos[mapa[nombre]] = numES(mp2[2]);
-        encontrados++;
-      }
-    }
-  }
-
-  if(encontrados === 0){
-    // No hay desglose por periodos en el texto: repartimos el consumo total
-    // con una proporción típica de una empresa (más consumo en llano/valle que en punta)
-    // NK admite miles con punto y decimales con coma ("5.427,000"); el prefijo evita empezar a leer
-    // a mitad de un número ("4.558,000 kWh" no puede dar "558,000").
-    var NK = '(\\d{1,3}(?:\\.\\d{3})+,\\d+|\\d{1,6}(?:[.,]\\d+)?)';
-    var PRE = '(?:^|[^\\d.,])';
-    var mConsumoTotal = t.match(new RegExp(PRE + NK + '\\s*kWh\\s*(?:de\\s+esta\\s+factura|\\.?\\s*Consumo\\s+total)', 'i'))
-      || t.match(new RegExp('Consumo\\s+total[^\\d]{0,40}?' + NK + '\\s*kWh', 'i'))
-      || t.match(new RegExp('Total\\s+consumo[^\\d]{0,40}?' + NK + '\\s*kWh', 'i'));
-    if(!mConsumoTotal) mConsumoTotal = t.match(new RegExp(PRE + NK + '\\s*kWh\\b', 'i'));
-    if(mConsumoTotal){
-      var total = numES(mConsumoTotal[1]);
-      datos.kwhPeriodos = [total*0.22, total*0.28, total*0.20, total*0.14, total*0.10, total*0.06];
-    }
+  if(elegido){
+    datos.kwhPeriodos = elegido.kwh.slice();
+    datos.periodosDetectados = Math.max(1, contarPeriodos(elegido.kwh));
+    datos.fuenteConsumo = elegido.src;
   } else {
-    datos.periodosDetectados = encontrados;
-  }
-
-  // --- Días facturados y mes de facturación, a partir de "Periodo de Facturación: del DD.MM.YYYY al DD.MM.YYYY" ---
-  // (admite '.', '/' o '-' como separador de fecha, formato habitual en facturas de distribuidora/e-distribución)
-  datos.mes = null;
-  var diasCalculados = false;
-  var reFacPeriodo = /Periodo\s+de\s+Facturaci[oó]n:?\s*(?:del\s*)?(\d{1,2})[.\/\-](\d{1,2})[.\/\-](\d{2,4})\s*(?:al?|a|-)\s*(\d{1,2})[.\/\-](\d{1,2})[.\/\-](\d{2,4})/i;
-  var mPeriodo = t.match(reFacPeriodo);
-  if(mPeriodo){
-    var y1 = parseInt(mPeriodo[3],10), y2 = parseInt(mPeriodo[6],10);
-    if(y1 < 100) y1 += 2000;
-    if(y2 < 100) y2 += 2000;
-    var fInicio = new Date(y1, parseInt(mPeriodo[2],10)-1, parseInt(mPeriodo[1],10));
-    var fFin = new Date(y2, parseInt(mPeriodo[5],10)-1, parseInt(mPeriodo[4],10));
-    var diffDias = Math.round((fFin - fInicio) / 86400000);
-    if(diffDias > 0 && diffDias < 400){ datos.dias = diffDias; diasCalculados = true; }
-    var mmFac = parseInt(mPeriodo[5],10);
-    if(mmFac >= 1 && mmFac <= 12) datos.mes = y2 + '-' + (mmFac < 10 ? '0'+mmFac : ''+mmFac);
-  }
-
-  // --- Días facturados (si no se pudo calcular a partir del periodo de facturación) ---
-  if(!diasCalculados){
-    var mapaDias = {}, hayRangos = false;
-    var reDiasA = /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})\s*(?:[\/\-]|al?)?\s*(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})\)?\s*\(?\s*(\d{1,3})\s*d[ií]as\)?/gi;
-    var reDiasB = /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})\s*(?:[\/\-]|al?)?\s*(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})\)?[^.]{0,30}?kW[^.]{0,15}?\(?\s*(\d{1,3})\s*d[ií]as\)?/gi;
-    var mr;
-    while((mr = reDiasA.exec(t)) !== null){ mapaDias[mr[1]+'_'+mr[2]] = parseInt(mr[3],10); hayRangos = true; }
-    while((mr = reDiasB.exec(t)) !== null){ mapaDias[mr[1]+'_'+mr[2]] = parseInt(mr[3],10); hayRangos = true; }
-    if(hayRangos){
-      var sumaDiasUnicos = 0;
-      for(var rk in mapaDias) sumaDiasUnicos += mapaDias[rk];
-      datos.dias = sumaDiasUnicos;
-    } else {
-      var mDias = t.match(/D[IÍ]AS\s+FACTURADOS:?\s*(\d{1,3})/i);
-      if(mDias) datos.dias = parseInt(mDias[1], 10);
+    var total = totalDecl;
+    if(!total){
+      var mk = t.match(new RegExp(ANTES + NUM + '\\s*kWh\\b', 'i'));
+      if(mk) total = numES(mk[1]);
+    }
+    if(total){
+      // Sin desglose: reparto típico de una empresa (más consumo en llano/valle que en punta)
+      datos.kwhPeriodos = [total*0.22, total*0.28, total*0.20, total*0.14, total*0.10, total*0.06];
+      datos.consumoEstimado = true;
     }
   }
 
-  // --- Potencia contratada (kW): se aplica igual a los 6 periodos, como es habitual ---
-  var potencias = [];
-  // Formato "Potencias Contratadas: P1=17,32kW; P2=17,32kW; ..." (e-distribución / Repsol y similares)
-  var mPotContratada = t.match(/Potencias?\s+Contratadas?:?[^P\d]{0,10}P1\s*[:=]\s*(\d{1,3}(?:[.,]\d+)?)\s*kW/i);
-  if(mPotContratada) potencias.push(numESPotencia(mPotContratada[1]));
-  if(potencias.length === 0){
-    var rePot = /\bPotencia\s*(?:punta|contratada)?\s*[:=]?\s*(\d{1,3}(?:[.,]\d+)?)\s*kW\b/gi;
-    var mp;
-    while((mp = rePot.exec(t)) !== null) potencias.push(numESPotencia(mp[1]));
-  }
-  if(potencias.length === 0){
-    var mpP1 = t.match(/\bP1\s*[:=]?\s*(\d{1,3}(?:[.,]\d+)?)\s*kW\b/i);
-    if(mpP1) potencias.push(numESPotencia(mpP1[1]));
-  }
-  if(potencias.length === 0){
-    var mp2b = t.match(/Punta\s+(\d{1,3}(?:[.,]\d+)?)\s*kW\b/i);
-    if(mp2b) potencias.push(numESPotencia(mp2b[1]));
-  }
-  if(potencias.length > 0) datos.potencia = potencias[0];
+  // --- Fechas ---
+  var f = leerFechas(t);
+  datos.dias = f.dias; datos.mes = f.mes;
 
-  // Potencia por periodo: se rellena con la potencia principal y, si la factura detalla cada periodo
-  // ("P6 15,1 kW x 31 días x 0,006084 €/kW día", Iberdrola), se sustituye por la de cada uno.
-  datos.potPeriodos = [datos.potencia, datos.potencia, datos.potencia, datos.potencia, datos.potencia, datos.potencia];
-  var rePotP = /\bP([1-6])\s+(\d{1,3}(?:[.,]\d+)?)\s*kW\s*x\s*\d{1,3}\s*d[ií]as/gi;
-  var mPP, vistosPotP = {};
-  while((mPP = rePotP.exec(t)) !== null){
-    var iPP = parseInt(mPP[1],10) - 1;
-    if(!vistosPotP[iPP]){
-      vistosPotP[iPP] = true;
-      datos.potPeriodos[iPP] = numESPotencia(mPP[2]);
-    }
-  }
+  // --- Potencia ---
+  datos.potPeriodos = leerPotencias(t);
+  datos.potencia = datos.potPeriodos[0] > 0 ? datos.potPeriodos[0] : Math.max.apply(null, datos.potPeriodos);
 
   // --- Excedentes vertidos a la red (kWh) ---
-  // "Compensación de excedentes (1) -240,24 kWh x 0,07 €/kWh" (Iberdrola) o "Excedentes 257,696 kWh x -0,016535 €/kWh" (Factor).
-  var mExc = t.match(/Compensaci[oó]n\s+de\s+excedentes\s*(?:\(\d\))?\s*-?\s*(\d{1,6}(?:[.,]\d+)?)\s*kWh\s*x/i)
-    || t.match(/\bExcedentes\s+(\d{1,6}(?:[.,]\d+)?)\s*kWh\s*x\s*-?\s*\d/i);
+  var mExc = t.match(new RegExp('Compensaci[oó]n\\s+de\\s+excedentes\\s*(?:\\(\\d\\))?\\s*-?\\s*' + NUM + '\\s*kWh\\s*[x×]', 'i'))
+    || t.match(new RegExp('\\bExcedentes\\s+' + NUM + '\\s*kWh\\s*[x×]\\s*-?\\s*\\d', 'i'));
   if(mExc) datos.excedentes = numES(mExc[1]);
 
-  // --- Importe total de la factura (€) ---
-  var mImporte = t.match(new RegExp('TOTAL\\s+IMPORTE\\s+FACTURA\\s*'+DINERO+'\\s*€', 'i'))
-    || t.match(new RegExp('TOTAL\\s+A\\s+PAGAR\\s*'+DINERO+'\\s*€', 'i'))
-    || t.match(new RegExp('TOTAL\\s+FACTURA\\s*'+DINERO+'\\s*€', 'i'))
-    || t.match(new RegExp('\\bTOTAL\\b\\s*'+DINERO+'\\s*€', 'i'))
-    || t.match(new RegExp('Importe\\s+(?:total|actual)[^\\d€]{0,30}?'+DINERO+'\\s*€', 'i'));
-  if(mImporte) datos.importe = numES(mImporte[1]);
+  // --- Otros conceptos (bono social, alquiler, reactiva, excesos) ---
+  datos.otros = leerOtrosConceptos(t, datos.dias);
 
-  // --- Mes de facturación (fallback si "Periodo de Facturación" no se detectó) ---
-  if(!datos.mes){
-    var mFecha = t.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
-    if(mFecha){
-      var mmF = parseInt(mFecha[2],10), yy = parseInt(mFecha[3],10);
-      if(yy < 100) yy += 2000;
-      if(mmF >= 1 && mmF <= 12) datos.mes = yy + '-' + (mmF < 10 ? '0'+mmF : ''+mmF);
-    }
-  }
+  // --- Importe total ---
+  var imp = leerImporte(t);
+  if(imp.valor > 0){ datos.importe = imp.valor; datos.importeLeido = true; datos.importeAlternativas = imp.alternativas; }
 
   return datos;
 }
 
 function procesarDatosLeidos(texto){
-  var d = parsearFacturaLuz3TD(texto);
+  var d;
+  try{ d = parsearFacturaLuz3TD(texto); }
+  catch(e){ console.error('[Comparador] Error interpretando la factura:', e); d = parsearFacturaLuz3TD(''); }
+  console.log('[Comparador] Datos leídos de la factura:', d);
+  calcularConDatos(d);
+}
+
+function calcularConDatos(d){
   var kwhTotal = d.kwhPeriodos.reduce(function(a,b){ return a+b; }, 0);
-  var importeActual = d.importe > 0 ? d.importe : calcularImporteReferencia(d.kwhPeriodos, d.potPeriodos, d.dias, d.mes);
+  if(!(kwhTotal > 0)){ mostrarSinDatos(d); return; }
+  // Importe muy alejado de lo esperable para ese consumo: casi seguro una mala lectura (OCR)
+  var ref = calcularImporteReferencia(d.kwhPeriodos, d.potPeriodos, d.dias, d.mes, d.otros);
+  function plausible(v){ return v > ref / 5 && v < ref * 5; }
+  if(d.importe > 0 && !plausible(d.importe)){
+    d.importeDudoso = d.importe; d.importe = 0;
+    var alt = (d.importeAlternativas || []).filter(plausible)[0];
+    if(alt){ d.importe = alt; d.importeRevisar = true; }
+  }
+  var importeActual = d.importe > 0 ? d.importe : calcularImporteReferencia(d.kwhPeriodos, d.potPeriodos, d.dias, d.mes, d.otros);
   computarResultados(d, kwhTotal, importeActual);
 }
 
 // Estimación de referencia (solo si no se pudo leer el importe real de la factura):
 // precio medio de mercado = media de las tarifas ofertadas (fijas + indexadas del mes) + 20% de margen típico de otras comercializadoras
-function calcularImporteReferencia(kwhPeriodos, potP, dias, mes){
+function calcularImporteReferencia(kwhPeriodos, potP, dias, mes, otros){
   var TAB = construirTabla(mes);
   var keys = Object.keys(TAB);
   var refPot = [0,0,0,0,0,0], refKwh = [0,0,0,0,0,0];
@@ -1068,9 +1420,10 @@ function calcularImporteReferencia(kwhPeriodos, potP, dias, mes){
   for(var ip=0;ip<6;ip++) costePotencia += potP[ip] * (dias/365) * refPot[ip];
   var costeEnergia = 0;
   for(var j=0;j<6;j++) costeEnergia += kwhPeriodos[j] * refKwh[j];
-  var base = costePotencia + costeEnergia;
+  otros = otros || {};
+  var base = costePotencia + costeEnergia + (otros.bono||0) + (otros.reactiva||0) + (otros.excesos||0);
   var imp = base * IMP_E;
-  return (base + imp) * (1 + tasaImpuesto());
+  return (base + imp + (otros.alquiler||0)) * (1 + tasaImpuesto());
 }
 
 function computarResultados(d, kwhTotal, importeActual){
@@ -1094,9 +1447,15 @@ function computarResultados(d, kwhTotal, importeActual){
       saldoBat = valorExc - descExc;
       costeBat = t.bateriaCoste || 0;
     }
-    var base = costePotencia + costeEnergia - descExc;
+    // Conceptos que no dependen de la comercializadora: se repercuten igual en todas las propuestas.
+    // Impuesto eléctrico sobre potencia + energía + bono social + reactiva + excesos; el alquiler de equipos
+    // no lleva impuesto eléctrico, solo IVA/IGIC (así viene en las facturas: p.ej. CHC, 411,07 € × 5,11% = 21,02 €).
+    var o = d.otros || {};
+    var otrosConIE = (o.bono||0) + (o.reactiva||0) + (o.excesos||0);
+    var alquiler = o.alquiler || 0;
+    var base = costePotencia + costeEnergia - descExc + otrosConIE;
     var imp = base * IMP_E;
-    var totalConImpuesto = (base + imp + costeBat) * (1 + tasa);
+    var totalConImpuesto = (base + imp + alquiler + costeBat) * (1 + tasa);
 
     resultados[k] = {
       total: totalConImpuesto,
@@ -1105,6 +1464,8 @@ function computarResultados(d, kwhTotal, importeActual){
       descExc: descExc * (1 + tasa),
       saldoBat: saldoBat,
       costeBat: costeBat * (1 + tasa),
+      costeOtros: (otrosConIE + alquiler) * (1 + tasa),
+      otrosConIEBase: otrosConIE, alquilerBase: alquiler,
       precioMedioKwh: kwhTotal > 0 ? costeEnergia / kwhTotal : 0
     };
   });
@@ -1131,6 +1492,14 @@ function txtConsumoPeriodos(d){
   for(var i=0;i<6;i++){ if(d.kwhPeriodos[i] > 0) partes.push('P' + (i+1) + ' ' + Math.round(d.kwhPeriodos[i])); }
   return partes.join(' · ');
 }
+function txtOtros(o){
+  var p = [];
+  if(o && o.bono > 0) p.push('bono social');
+  if(o && o.alquiler > 0) p.push('alquiler equipos');
+  if(o && o.reactiva > 0) p.push('reactiva');
+  if(o && o.excesos > 0) p.push('excesos potencia');
+  return p.join(', ');
+}
 function fmt4(n){ return n.toFixed(6).replace('.',',') + ' €'; }
 
 function mostrarResultados(res, sorted, winner, ahorro, d, kwhTotal, importeActual, TAB){
@@ -1155,19 +1524,23 @@ function mostrarResultados(res, sorted, winner, ahorro, d, kwhTotal, importeActu
   document.getElementById('notaBox').innerHTML =
     '🐾 <strong>Leído de tu factura:</strong> ⚡ Solo Luz (3.0TD)' +
     (kwhTotal > 0 ? ' · Consumo: <strong>' + Math.round(kwhTotal) + ' kWh</strong>' + (d.periodosDetectados > 0 ? ' (' + txtConsumoPeriodos(d) + ' kWh)' : '') : '') +
+    (totalOtros(d.otros) > 0 ? ' · Otros conceptos (' + txtOtros(d.otros) + '): <strong>' + fmt(totalOtros(d.otros)) + '</strong> sin IVA, incluidos en todas las propuestas' : '') +
     (d.excedentes > 0 ? ' · Excedentes: <strong>' + Math.round(d.excedentes) + ' kWh</strong>' : '') +
     (d.potencia > 0 ? ' · Potencia contratada: <strong>' + txtPotencia(d) + '</strong>' : '') +
     ' · Días facturados: <strong>' + d.dias + '</strong>' +
-    ' · Importe actual: <strong>' + fmt(importeActual) + '</strong>' +
+    ' · Importe actual: <strong>' + fmt(importeActual) + '</strong>' + (d.importe > 0 ? (d.importeRevisar ? ' <em>(lectura dudosa de la imagen: compruébalo abajo)</em>' : '') : (d.importeDudoso ? ' <em>(estimado: el importe leído, ' + fmt(d.importeDudoso) + ', no cuadra con tu consumo; revísalo abajo)</em>' : ' <em>(estimado: no lo hemos encontrado en la factura)</em>')) +
     '<br>💡 Precios orientativos · Impuesto aplicado: <strong>' + nombreImpuesto() + '</strong>' +
     (d.excedentes > 0 ? '<br>☀️ Autoconsumo: excedentes compensados hasta el coste de la energía; el sobrante se acumula en la batería virtual.' + (sorted.some(function(k){ return TAB[k].excEstimado; }) ? ' El precio de excedentes de Uni Eléctrica (indexado a OMIE) es una estimación.' : '') : '') +
-    (d.periodosDetectados === 0 ? '<br>⚠️ No hemos detectado el desglose por periodos P1-P6 en tu factura: hemos estimado el reparto habitual de una empresa.' : '') +
-    (d.mes ? '' : '<br>📈 No hemos detectado el mes exacto de tu factura: las tarifas indexadas usan la media de los últimos 12 meses.');
+    (d.periodosDetectados === 0 && kwhTotal > 0 ? '<br>⚠️ No hemos detectado el desglose por periodos P1-P6 en tu factura: hemos estimado el reparto habitual de una empresa.' : '') +
+    (d.mes ? '' : '<br>📈 No hemos detectado el mes exacto de tu factura: las tarifas indexadas usan la media de los últimos 12 meses.') +
+    ((d.periodosDetectados === 0 || d.importe <= 0 || d.potencia <= 0) ? '<br>✏️ Puedes corregir los datos en el recuadro de abajo y recalcular.' : '');
+  rellenarEditor(d, importeActual);
 
   var avisoBox = document.getElementById('avisoBox');
-  if(d.potencia > 0 && d.potencia <= 15){
+  var potMax = Math.max.apply(null, d.potPeriodos.concat([d.potencia]));
+  if(potMax > 0 && potMax <= 15){
     avisoBox.style.display = 'block';
-    avisoBox.innerHTML = '🚫 La potencia contratada que hemos leído (' + d.potencia + ' kW) es igual o menor a 15 kW: probablemente tu suministro está en tarifa <strong>2.0TD (residencial)</strong>, no 3.0TD. Prueba nuestro <a href="https://facturasenergia.tecomparotodo.es/">comparador de facturas para particulares</a>.';
+    avisoBox.innerHTML = '🚫 La potencia contratada que hemos leído (' + String(potMax).replace('.',',') + ' kW) es igual o menor a 15 kW: probablemente tu suministro está en tarifa <strong>2.0TD (residencial)</strong>, no 3.0TD. Prueba nuestro <a href="https://facturasenergia.tecomparotodo.es/">comparador de facturas para particulares</a>.';
   } else {
     avisoBox.style.display = 'none';
   }
@@ -1195,6 +1568,9 @@ function mostrarResultados(res, sorted, winner, ahorro, d, kwhTotal, importeActu
     }
     desgloseHtml += '<div class="tc-row"><span class="l">⚡ Coste energía</span><span class="v">' + fmt(r.costeEnergia) + '</span></div>';
     desgloseHtml += '<div class="tc-row"><span class="l">🔌 Coste potencia (' + txtPotencia(d) + ')</span><span class="v">' + fmt(r.costePotencia) + '</span></div>';
+    if(r.costeOtros > 0.005){
+      desgloseHtml += '<div class="tc-row"><span class="l">🧾 Otros conceptos de tu factura (' + txtOtros(d.otros) + ')</span><span class="v">' + fmt(r.costeOtros) + '</span></div>';
+    }
     if(r.descExc > 0){
       desgloseHtml += '<div class="tc-row"><span class="l">☀️ Excedentes (' + Math.round(d.excedentes) + ' kWh × ' + fmt4(t.excPrecio) + (t.excIndexado ? ', indexado OMIE' + (t.excEstimado ? ' · estimado' : '') : '') + ')</span><span class="v">−' + fmt(r.descExc) + '</span></div>';
     }
@@ -1232,6 +1608,68 @@ function mostrarResultados(res, sorted, winner, ahorro, d, kwhTotal, importeActu
   setTimeout(function(){
     document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
   }, 300);
+}
+
+// Sin consumo legible: en vez de mostrar una comparativa a 0 €, se pide completar los datos.
+function mostrarSinDatos(d){
+  document.getElementById('loadingWrap').style.display = 'none';
+  document.getElementById('btnAnalizar').disabled = false;
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('ctaSiempre').style.display = 'none';
+  document.getElementById('dogReactionText').textContent = '🐾 ¡Uy! No he podido leer bien tu factura';
+  document.getElementById('bestName').textContent = '—';
+  document.getElementById('bestPrice').textContent = '—';
+  var ah = document.getElementById('ahorroLabel');
+  ah.classList.remove('destacado');
+  ah.textContent = '✏️ Completa los datos de tu factura justo debajo y pulsa «Recalcular»';
+  document.getElementById('notaBox').innerHTML = '⚠️ No hemos conseguido leer el consumo de tu factura. Suele pasar con fotos o capturas borrosas o con poca resolución. ' +
+    'Si tienes el <strong>PDF original</strong> de la factura, súbelo: se lee mucho mejor. También puedes escribir los datos a mano en el recuadro de abajo.';
+  document.getElementById('avisoBox').style.display = 'none';
+  document.getElementById('tarifasGrid').innerHTML = '';
+  window._ULTIMO = null;
+  rellenarEditor(d, 0);
+  setTimeout(function(){ document.getElementById('editBox').scrollIntoView({behavior:'smooth', block:'center'}); }, 300);
+}
+
+// === EDITOR DE DATOS LEÍDOS ===
+function numInput(v){ return (Math.round(v*1000)/1000).toString().replace('.',','); }
+function rellenarEditor(d, importeActual){
+  for(var i=0;i<6;i++){
+    document.getElementById('edK'+i).value = d.kwhPeriodos[i] > 0 ? numInput(d.kwhPeriodos[i]) : '0';
+    document.getElementById('edP'+i).value = d.potPeriodos[i] > 0 ? numInput(d.potPeriodos[i]) : '';
+  }
+  document.getElementById('edImporte').value = d.importe > 0 ? d.importe.toFixed(2).replace('.',',') : '';
+  document.getElementById('edDias').value = d.dias;
+  document.getElementById('edMes').value = d.mes || '';
+  document.getElementById('edExc').value = d.excedentes > 0 ? numInput(d.excedentes) : '0';
+  var o = d.otros || {};
+  document.getElementById('edBono').value = (o.bono||0).toFixed(2).replace('.',',');
+  document.getElementById('edAlq').value = (o.alquiler||0).toFixed(2).replace('.',',');
+  document.getElementById('edReac').value = (o.reactiva||0).toFixed(2).replace('.',',');
+  document.getElementById('edExcPot').value = (o.excesos||0).toFixed(2).replace('.',',');
+  // Se abre solo si falta algo importante
+  document.getElementById('editBox').open = true;
+}
+function leerNumEditor(id){
+  var v = document.getElementById(id).value.trim().replace(/\s/g,'').replace('€','');
+  return v ? numES(v) : 0;
+}
+function recalcularManual(){
+  var prev = window._ULTIMO ? window._ULTIMO.d : {};
+  var d = {
+    kwhPeriodos:[], potPeriodos:[], excedentes: leerNumEditor('edExc'),
+    importe: leerNumEditor('edImporte'), dias: parseInt(document.getElementById('edDias').value,10) || 30,
+    mes: null, periodosDetectados: 6, importeLeido: true,
+    otros: { bono: leerNumEditor('edBono'), alquiler: leerNumEditor('edAlq'), reactiva: leerNumEditor('edReac'), excesos: leerNumEditor('edExcPot') }
+  };
+  for(var i=0;i<6;i++){ d.kwhPeriodos.push(leerNumEditor('edK'+i)); d.potPeriodos.push(leerNumEditor('edP'+i)); }
+  var p1 = d.potPeriodos[0] || Math.max.apply(null, d.potPeriodos);
+  for(var j=0;j<6;j++) if(!(d.potPeriodos[j] > 0)) d.potPeriodos[j] = p1;
+  d.potencia = p1;
+  var mes = document.getElementById('edMes').value.trim().match(/^(\d{4})-(\d{1,2})$/);
+  if(mes) d.mes = mes[1] + '-' + ('0' + parseInt(mes[2],10)).slice(-2);
+  if(d.kwhPeriodos.reduce(function(a,b){ return a+b; },0) <= 0){ alert('Indica al menos el consumo de un periodo.'); return; }
+  calcularConDatos(d);
 }
 
 function hexRgb(h){
@@ -1427,7 +1865,7 @@ function generarPDFComparativa(P){
   var y1 = doc.lastAutoTable.finalY + 9;
   // La tabla de desglose (cabecera + 6 periodos + pie) debe caber entera: si no, pasa a la página siguiente.
   var rGan = P.res[P.winner];
-  var filasPie = 4 + (rGan.descExc > 0 ? 1 : 0) + ((rGan.costeBat || 0) > 0 ? 1 : 0);
+  var filasPie = 4 + (rGan.descExc > 0 ? 1 : 0) + (rGan.otrosConIEBase > 0 ? 1 : 0) + (rGan.alquilerBase > 0 ? 1 : 0) + ((rGan.costeBat || 0) > 0 ? 1 : 0);
   if(y1 + 14 + (7 + filasPie) * 11 > H - 20){ doc.addPage(); y1 = 20; }
   y1 = tituloSeccion(y1, 'Desglose por periodos — ' + winnerT.n);
 
@@ -1448,15 +1886,23 @@ function generarPDFComparativa(P){
   }
   var rW = P.res[P.winner];
   var subtotalBase = (rW.costeEnergia + rW.costePotencia - (rW.descExc || 0))/(1+tasaImpuesto());
-  var impBase = subtotalBase * IMP_E;
+  var otrosIE = rW.otrosConIEBase || 0, alqBase = rW.alquilerBase || 0;
+  var impBase = (subtotalBase + otrosIE) * IMP_E;
   var batBase = (rW.costeBat || 0)/(1+tasaImpuesto());
-  var ivaBase = (subtotalBase + impBase + batBase) * tasaImpuesto();
+  var ivaBase = (subtotalBase + otrosIE + impBase + alqBase + batBase) * tasaImpuesto();
   var piePeriodo = [];
   if(rW.descExc > 0){
     piePeriodo.push([{ content:'Compensación de excedentes (' + Math.round(P.d.excedentes) + ' kWh × ' + fmt4(winnerT.excPrecio) + ') ya descontada en energía', colSpan:5 }, '- ' + fmt(rW.descExc/(1+tasaImpuesto()))]);
   }
   piePeriodo.push([{ content:'Subtotal energía + potencia (antes de impuestos)', colSpan:5 }, fmt(subtotalBase)]);
+  if(otrosIE > 0){
+    var etq = []; if(P.d.otros.bono > 0) etq.push('bono social'); if(P.d.otros.reactiva > 0) etq.push('reactiva'); if(P.d.otros.excesos > 0) etq.push('excesos de potencia');
+    piePeriodo.push([{ content:'Otros conceptos de tu factura (' + etq.join(', ') + ')', colSpan:5 }, fmt(otrosIE)]);
+  }
   piePeriodo.push([{ content:'Impuesto Eléctrico (' + (IMP_E*100).toFixed(4).replace('.',',') + '%)', colSpan:5 }, fmt(impBase)]);
+  if(alqBase > 0){
+    piePeriodo.push([{ content:'Alquiler de equipos de medida', colSpan:5 }, fmt(alqBase)]);
+  }
   if(batBase > 0){
     piePeriodo.push([{ content:'Batería virtual (coste mensual)', colSpan:5 }, fmt(batBase)]);
   }
