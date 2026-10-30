@@ -550,15 +550,14 @@ var T = {
     kwh:[0.261041,0.224101,0.182867,0.154663,0.134835,0.161689]
   },
   naturgy_fijo: {
-    // Precios Naturgy actualizados 27/10/2026
-    n:'Naturgy · Plan Fijo Luz Tramos', c:'#004C97', logo:'logo_naturgy.png',
+    n:'Naturgy · Plan Fijo Luz', c:'#004C97', logo:'logo_naturgy.png',
     pot:[21.143720,11.384350,5.248335,4.653020,3.280620,2.208980],
-    kwh:[0.251200,0.226200,0.202700,0.189100,0.182800,0.175200]
+    kwh:[0.276500,0.251700,0.227800,0.214200,0.207900,0.200800]
   },
   naturgy_fijo24h: {
     n:'Naturgy · Plan Fijo Luz 24h', c:'#0077C8', logo:'logo_naturgy.png',
     pot:[22.357345,12.597975,6.461595,5.866645,4.494245,3.422605],
-    kwh:[0.193500,0.193500,0.193500,0.193500,0.193500,0.193500] // actualizado 27/10/2026
+    kwh:[0.2189,0.2189,0.2189,0.2189,0.2189,0.2189]
   },
   // TotalEnergies · Clásica 3.0TD (tarifa previsible, 12 meses). Fuente: PDF "Precios base elec V.2026.1410-2810
   // Península" (precios vigentes 14/10/2026 - 28/10/2026, suministros desde 14/10/26). Peajes y cargos incluidos;
@@ -588,21 +587,20 @@ var INDEXADO = {
     n:'Plenitude · Bassic Index Green', c:'#00847A', logo:'logo_plenitude.png',
     pot:[20.376855,10.617485,4.481470,3.886155,2.513755,1.442115],
     feeInterno: 0.002, // 0,2 cts€/kWh ya incluidos en la tabla oficial: se restan antes de aplicar FEE_FIJO
-    // Precios Plenitude "energía + peajes y cargos" (fila con * de la plantilla oficial, fee 0,2 incluido). Actualizado: precios a 30/09/2026.
-    avg12m:[0.179702,0.146319,0.142547,0.126574,0.09928,0.124953],
+    avg12m:[0.11634975,0.10740533333333335,0.0957032,0.09540833333333333,0.094574,0.10663533333333335],
     meses:{
-      '2025-10':[null,null,null,0.135547,0.115691,0.116592],
-      '2025-11':[null,0.140878,0.121789,null,null,0.099198],
-      '2025-12':[0.198323,0.172769,null,null,null,0.115469],
-      '2026-01':[0.198236,0.166062,null,null,null,0.119284],
-      '2026-02':[0.120332,0.082837,null,null,null,0.048013],
-      '2026-03':[null,0.138387,0.104323,null,null,0.090501],
-      '2026-04':[null,null,null,0.096149,0.08867,0.105701],
-      '2026-05':[null,null,null,0.093229,0.093479,0.112197],
-      '2026-06':[null,null,0.116195,0.110844,null,0.131392],
-      '2026-07':[0.201916,0.176983,null,null,null,0.162485],
-      '2026-08':[null,null,0.166525,0.150528,null,0.185919],
-      '2026-09':[null,null,0.203902,0.173148,null,0.212682]
+      '2025-08':[null,null,0.10183,0.09673,null,0.108966],
+      '2025-09':[null,null,0.092216,0.079131,null,0.098806],
+      '2025-10':[null,null,null,0.125752,0.110985,0.113694],
+      '2025-11':[null,0.101964,0.10251,null,null,0.0963],
+      '2025-12':[0.134971,0.133855,null,null,null,0.112571],
+      '2026-01':[0.134884,0.127148,null,null,null,0.116386],
+      '2026-02':[0.05698,0.043923,null,null,null,0.045115],
+      '2026-03':[null,0.099473,0.085044,null,null,0.087603],
+      '2026-04':[null,null,null,0.086354,0.083964,0.102803],
+      '2026-05':[null,null,null,0.083434,0.088773,0.109299],
+      '2026-06':[null,null,0.096916,0.101049,null,0.128494],
+      '2026-07':[0.138564,0.138069,null,null,null,0.159587]
     }
   },
   eleia_indexado: {
