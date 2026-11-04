@@ -567,10 +567,18 @@ var T = {
     pot:[20.3769,10.6176,4.4815,3.8863,2.5139,1.4423],
     kwh:[0.297743,0.250841,0.170979,0.138644,0.124462,0.170628]
   },
+  // Energya VM · A Tu Medida Electricidad, precio fijo PENINSULAR 12 meses, 3.0TD. Fuente: PDF "Precios Campaña ATM
+  // electricidad EVM 03/11/2026" (campaña 4526). Precios base sin Fee ni impuestos, sin incremento comercial del canal.
+  // Potencia: el PDF da €/kW/mes, aquí se pasa a €/kW·año (x12). Sin datos de excedentes: no hay entrada en EXC_BAT.
+  energya_vm: {
+    n:'Energya VM · A Tu Medida', c:'#F0820F', logo:'logo_energya.png',
+    pot:[20.376,10.620,4.476,3.888,2.508,1.440],
+    kwh:[0.323742,0.257426,0.179042,0.153828,0.139683,0.197080]
+  },
   endesa_open: {
     n: 'Endesa · Open', c:'#00B451', logo:'logo_endesa.png',
-    pot:[22.296564, 12.3504, 6.094848, 5.493324, 4.086792, 2.99646],
-    kwh:[0.194601, 0.194601, 0.194601, 0.194601, 0.194601, 0.194601]
+    pot:[21.876927, 12.117621, 5.981534, 5.386333, 4.013851, 2.942287],
+    kwh:[0.226667, 0.226667, 0.226667, 0.226667, 0.226667, 0.226667]
   }
 };
 // ============================================================
