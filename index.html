@@ -559,21 +559,13 @@ var T = {
     pot:[22.357345,12.597975,6.461595,5.866645,4.494245,3.422605],
     kwh:[0.2189,0.2189,0.2189,0.2189,0.2189,0.2189]
   },
-  // TotalEnergies · Clásica 3.0TD (tarifa previsible, 12 meses). Fuente: PDF "Precios base elec V.2026.1410-2810
-  // Península" (precios vigentes 14/10/2026 - 28/10/2026, suministros desde 14/10/26). Peajes y cargos incluidos;
-  // el PDF no incluye el CO comercial ni impuestos. Sin datos de excedentes en el PDF: no hay entrada en EXC_BAT.
-  total_clasica: {
-    n:'TotalEnergies · Clásica', c:'#FF6600', logo:'logo_totalenergy.png',
-    pot:[20.3769,10.6176,4.4815,3.8863,2.5139,1.4423],
-    kwh:[0.297743,0.250841,0.170979,0.138644,0.124462,0.170628]
-  },
   // Energya VM · A Tu Medida Electricidad, precio fijo PENINSULAR 12 meses, 3.0TD. Fuente: PDF "Precios Campaña ATM
-  // electricidad EVM 03/11/2026" (campaña 4526). Precios base sin Fee ni impuestos, sin incremento comercial del canal.
+  // electricidad EVM 04/11/2026" (campaña 4626). Precios base del PDF + Fee 1,5 €/MWh (0,0015 €/kWh) sumado a cada periodo, sin impuestos, sin incremento comercial del canal.
   // Potencia: el PDF da €/kW/mes, aquí se pasa a €/kW·año (x12). Sin datos de excedentes: no hay entrada en EXC_BAT.
   energya_vm: {
     n:'Energya VM · A Tu Medida', c:'#F0820F', logo:'logo_energya.png',
     pot:[20.376,10.620,4.476,3.888,2.508,1.440],
-    kwh:[0.323742,0.257426,0.179042,0.153828,0.139683,0.197080]
+    kwh:[0.304572,0.239993,0.162946,0.143913,0.135734,0.182143]
   },
   endesa_open: {
     n: 'Endesa · Open', c:'#00B451', logo:'logo_endesa.png',
@@ -643,6 +635,31 @@ var INDEXADO = {
     pot:[20.376927,10.617621,4.481534,3.886333,2.513851,1.442287],
     feeInterno: 0, // tabla construida sin margen: se añade el FEE_FIJO completo
     extra: 0.0125, // servicios de ajuste + Fondo Nacional de Eficiencia Energética: 1,25 cts€/kWh
+    avg12m:[0.150684,0.115076,0.097661,0.084617,0.064961,0.081744],
+    meses:{
+      '2025-08':[null,null,0.096702,0.083977,null,0.086603],
+      '2025-09':[null,null,0.091091,0.070434,null,0.078825],
+      '2025-10':[null,null,null,0.111507,0.089914,0.086],
+      '2025-11':[null,0.113916,0.093024,null,null,0.067311],
+      '2025-12':[0.16929,0.140692,null,null,null,0.08311],
+      '2026-01':[0.16318,0.128192,null,null,null,0.079042],
+      '2026-02':[0.086907,0.05025,null,null,null,0.011598],
+      '2026-03':[null,0.098729,0.065348,null,null,0.046714],
+      '2026-04':[null,null,null,0.054268,0.045803,0.059602],
+      '2026-05':[null,null,null,0.059499,0.059165,0.075579],
+      '2026-06':[null,null,0.086503,0.081934,null,0.098768],
+      '2026-07':[0.183361,0.158675,null,null,null,0.135846],
+      '2026-08':[null,null,0.152338,0.130063,null,0.158539]
+    }
+  },
+  // TotalEnergies · Rock (antes "Clásica", tarifa fija). Ahora indexada a OMIE. Potencia de la web de Rock (€/kW/día × 365).
+  // Energía: misma tabla mensual construida desde OMIE que Uni Eléctrica (media OMIE × pérdidas + peajes + cargos),
+  // sin margen interno; solo se añade el FEE_FIJO (1,5 cts€/kWh = "coste gestión" de la web de Rock). Sin 'extra'.
+  total_clasica: {
+    n:'TotalEnergies · Rock', c:'#FF6600', logo:'logo_totalenergy.png',
+    pot:[22.777095,13.017725,6.88171,6.286395,4.913995,19.442455],
+    feeInterno: 0,
+    extra: 0,
     avg12m:[0.150684,0.115076,0.097661,0.084617,0.064961,0.081744],
     meses:{
       '2025-08':[null,null,0.096702,0.083977,null,0.086603],
